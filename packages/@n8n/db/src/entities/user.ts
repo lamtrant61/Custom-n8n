@@ -8,6 +8,8 @@ import {
 	Entity,
 	Index,
 	OneToMany,
+	ManyToOne,
+	JoinColumn,
 	PrimaryGeneratedColumn,
 	BeforeInsert,
 } from '@n8n/typeorm';
@@ -20,6 +22,8 @@ import type { AuthIdentity } from './auth-identity';
 import type { ProjectRelation } from './project-relation';
 import type { SharedCredentials } from './shared-credentials';
 import type { SharedWorkflow } from './shared-workflow';
+// eslint-disable-next-line import-x/no-cycle
+import { Tenant } from './tenant';
 import type { IPersonalizationSurveyAnswers } from './types-db';
 import { lowerCaser, objectRetriever } from '../utils/transformers';
 import { NoUrl } from '../utils/validators/no-url.validator';
@@ -68,6 +72,24 @@ export class User extends WithTimestamps implements IUser, AuthPrincipal {
 
 	@Column({ type: String })
 	role: GlobalRole;
+
+	// @ManyToOne('user', 'tenant')
+	// @JoinColumn({ name: 'tenantId' })
+	// tenant: Tenant;
+
+	// @Column({ type: 'uuid' })
+	// tenantId: string;
+
+	@ManyToOne(
+		() => Tenant,
+		(tenant) => tenant.users,
+		{ nullable: true },
+	)
+	@JoinColumn({ name: 'tenantId' })
+	tenant: Tenant;
+
+	@Column({ type: 'uuid', nullable: true })
+	tenantId: string;
 
 	@OneToMany('AuthIdentity', 'user')
 	authIdentities: AuthIdentity[];
