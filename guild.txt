@@ -1,0 +1,15 @@
+pnpm install
+pnpm build
+pnpm start
+
+set biến môi trường sau đây:
+
+DB_POSTGRESDB_DATABASE
+DB_POSTGRESDB_HOST
+DB_POSTGRESDB_PASSWORD
+DB_POSTGRESDB_PORT
+DB_POSTGRESDB_USER
+DB_TYPE - postgresdb
+
+Hoặc set biến môi trường cho file - Cách này sẽ bị middleware chặn vì thiếu biến môi trường
+N8N_CONFIG_FILES C:\Users\n8n\config.json
