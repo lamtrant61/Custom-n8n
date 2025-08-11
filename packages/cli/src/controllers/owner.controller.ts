@@ -50,10 +50,11 @@ export class OwnerController {
 		owner.firstName = firstName;
 		owner.lastName = lastName;
 		owner.password = await this.passwordUtility.hash(password);
+		owner.tenantRole = 0;
 
 		// TODO: move XSS validation out into the DTO class
 		await validateEntity(owner);
-
+		this.logger.info(`${JSON.stringify(owner)}, owner info`);
 		owner = await this.userRepository.save(owner, { transaction: false });
 
 		this.logger.info('Owner was set up successfully');
