@@ -1,5 +1,5 @@
 import { Service } from '@n8n/di';
-import { DataSource, Repository } from '@n8n/typeorm';
+import { DataSource, Repository, DeepPartial } from '@n8n/typeorm';
 
 import { FolderTagMapping } from '../entities/folder-tag-mapping';
 
@@ -13,7 +13,9 @@ export class FolderTagMappingRepository extends Repository<FolderTagMapping> {
 		return await this.manager.transaction(async (tx) => {
 			await tx.delete(FolderTagMapping, { folderId });
 
-			const tags = tagIds.map((tagId) => this.create({ folderId, tagId }));
+			const tags = tagIds.map((tagId) => this.create({ folderId, tagId })) as Array<
+				DeepPartial<FolderTagMapping>
+			>;
 
 			return await tx.insert(FolderTagMapping, tags);
 		});

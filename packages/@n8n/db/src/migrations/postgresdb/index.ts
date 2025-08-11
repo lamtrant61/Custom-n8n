@@ -4,7 +4,6 @@ import { InitialMigration1587669153312 } from './1587669153312-InitialMigration'
 import { WebhookModel1589476000887 } from './1589476000887-WebhookModel';
 import { CreateIndexStoppedAt1594828256133 } from './1594828256133-CreateIndexStoppedAt';
 import { MakeStoppedAtNullable1607431743768 } from './1607431743768-MakeStoppedAtNullable';
-import { CreateTenantId1608421225232 } from './1608421225232-CreateTenant';
 import { AddWebhookId1611144599516 } from './1611144599516-AddWebhookId';
 import { CreateTagEntity1617270242566 } from './1617270242566-CreateTagEntity';
 import { UniqueWorkflowNames1620824779533 } from './1620824779533-UniqueWorkflowNames';
@@ -14,6 +13,7 @@ import { AddExecutionEntityIndexes1644422880309 } from './1644422880309-AddExecu
 import { IncreaseTypeVarcharLimit1646834195327 } from './1646834195327-IncreaseTypeVarcharLimit';
 import { CreateUserManagement1646992772331 } from './1646992772331-CreateUserManagement';
 import { LowerCaseUserEmail1648740597343 } from './1648740597343-LowerCaseUserEmail';
+import { CreateTenantId1652233212434 } from './1652233212434-CreateTenant';
 import { CommunityNodes1652254514002 } from './1652254514002-CommunityNodes';
 import { AddUserSettings1652367743993 } from './1652367743993-AddUserSettings';
 import { AddAPIKeyColumn1652905585850 } from './1652905585850-AddAPIKeyColumn';
@@ -96,7 +96,7 @@ export const postgresMigrations: Migration[] = [
 	InitialMigration1587669153312,
 	WebhookModel1589476000887,
 	CreateIndexStoppedAt1594828256133,
-	CreateTenantId1608421225232,
+	CreateTenantId1652233212434,
 	AddWebhookId1611144599516,
 	MakeStoppedAtNullable1607431743768,
 	CreateTagEntity1617270242566,
