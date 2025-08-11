@@ -91,6 +91,9 @@ export class User extends WithTimestamps implements IUser, AuthPrincipal {
 	@Column({ type: 'uuid', nullable: true })
 	tenantId: string;
 
+	@Column({ type: 'int', default: 2 })
+	tenantRole: number; // 0: root, 1: admin tenant, 2: user
+
 	@OneToMany('AuthIdentity', 'user')
 	authIdentities: AuthIdentity[];
 
