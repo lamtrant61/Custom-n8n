@@ -1,5 +1,5 @@
 import { Service } from '@n8n/di';
-import { DataSource, Repository } from '@n8n/typeorm';
+import { DataSource, Repository, DeepPartial } from '@n8n/typeorm';
 
 import { WorkflowTagMapping } from '../entities';
 
@@ -13,7 +13,9 @@ export class WorkflowTagMappingRepository extends Repository<WorkflowTagMapping>
 		return await this.manager.transaction(async (tx) => {
 			await tx.delete(WorkflowTagMapping, { workflowId });
 
-			const taggings = tagIds.map((tagId) => this.create({ workflowId, tagId }));
+			const taggings = tagIds.map((tagId) => this.create({ workflowId, tagId })) as Array<
+				DeepPartial<WorkflowTagMapping>
+			>;
 
 			return await tx.insert(WorkflowTagMapping, taggings);
 		});
