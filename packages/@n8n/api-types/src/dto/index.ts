@@ -79,3 +79,5 @@ export {
 } from './user/users-list-filter.dto';
 
 export { OidcConfigDto } from './oidc/config.dto';
+
+export { TenantCreateRequest, TenantUpdateRequest } from './tenant/tenant.dto';
