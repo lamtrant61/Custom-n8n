@@ -54,6 +54,7 @@ export class UserService {
 		await this.userRepository.save(user);
 	}
 
+	// eslint-disable-next-line complexity
 	async toPublic(
 		user: User,
 		options?: {
@@ -72,6 +73,9 @@ export class UserService {
 			...rest,
 			signInType: providerType ?? 'email',
 			isOwner: user.role === 'global:owner',
+			tenantId: user.tenantId ?? '',
+			// eslint-disable-next-line eqeqeq
+			tenantRoleName: user.tenantRole == 0 ? 'Super User' : user.tenantRole == 1 ? 'Admin' : 'User',
 		};
 
 		if (options?.withInviteUrl && !options?.inviterId) {

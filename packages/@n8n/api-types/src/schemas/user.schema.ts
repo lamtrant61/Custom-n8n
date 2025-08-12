@@ -40,6 +40,7 @@ export const userListItemSchema = z.object({
 	email: z.string().email().nullable().optional(),
 	role: roleSchema.optional(),
 	tenantRole: tenantRoleSchema.optional(),
+	tenantRoleName: z.string().optional(),
 	isPending: z.boolean().optional(),
 	isOwner: z.boolean().optional(),
 	signInType: z.string().optional(),

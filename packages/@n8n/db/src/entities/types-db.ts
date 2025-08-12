@@ -106,6 +106,9 @@ export interface PublicUser {
 	createdAt: Date;
 	isPending: boolean;
 	role?: GlobalRole;
+	tenantId?: string;
+	tenantRole?: number;
+	tenantRoleName?: string;
 	globalScopes?: Scope[];
 	signInType: AuthProviderType;
 	disabled: boolean;
