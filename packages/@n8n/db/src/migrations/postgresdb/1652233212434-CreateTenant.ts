@@ -10,6 +10,7 @@ export class CreateTenantId1652233212434 implements ReversibleMigration {
 				subdomain VARCHAR DEFAULT NULL,
 				logo VARCHAR DEFAULT NULL,
 				status BOOLEAN NOT NULL DEFAULT true,
+				"isDeleted" BOOLEAN NOT NULL DEFAULT false,
 				"createdAt" TIMESTAMP NOT NULL DEFAULT now(),
 				"updatedAt" TIMESTAMP NOT NULL DEFAULT now()
 			)
