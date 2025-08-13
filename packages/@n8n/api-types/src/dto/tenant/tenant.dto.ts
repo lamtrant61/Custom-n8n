@@ -8,9 +8,14 @@ export class TenantCreateRequest extends Z.class({
 }) {}
 
 export class TenantUpdateRequest extends Z.class({
-	id: z.string().uuid(),
 	name: z.string().min(2).max(100).optional(),
 	subdomain: z.string().min(2).max(100).optional(),
 	logo: z.string().url().optional(),
-	status: z.boolean().optional(),
+	status: z
+		.preprocess((val) => {
+			if (val === 'true') return true;
+			if (val === 'false') return false;
+			return val;
+		}, z.boolean())
+		.optional(),
 }) {}
