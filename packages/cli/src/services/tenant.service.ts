@@ -3,6 +3,7 @@ import { Tenant, TenantRepository } from '@n8n/db';
 import { Service } from '@n8n/di';
 
 import { InternalServerError } from '@/errors/response-errors/internal-server.error';
+import { FilterTenant } from '@/types/tenant.types';
 
 @Service()
 export class TenantService {
@@ -12,8 +13,15 @@ export class TenantService {
 	) {}
 
 	/** Lấy tất cả tenants */
-	async findAll() {
-		return await this.tenantRepository.find();
+	async findAll(filter: FilterTenant, page: number = 1, limit: number = 10) {
+		this.logger.info('Finding all tenants', { filter, page, limit });
+		const tenantQuery = this.tenantRepository.buildTenantQuery(
+			{ ...filter },
+			limit,
+			(page - 1) * limit,
+		);
+		const [rows, total] = await tenantQuery.getManyAndCount();
+		return { rows, total };
 	}
 
 	/** Lấy tenant theo ID */
@@ -50,14 +58,16 @@ export class TenantService {
 			return null;
 		}
 		return await this.tenantRepository.updateTenant(id, data);
-		// Object.assign(tenant, data);
-		// return await this.tenantRepository.save(tenant);
 	}
 
 	/** Xoá tenant */
 	async delete(id: string) {
 		try {
-			await this.tenantRepository.deleteTenant(id);
+			const searchTenant = await this.tenantRepository.findOneById(id);
+			if (!searchTenant) throw new Error('Cannot find tenant id - service tenant');
+			const tenant = await this.tenantRepository.deleteTenant(id);
+			if (tenant === null || !tenant.isDeleted)
+				throw new Error('Cannot delete tenant - service tenant');
 			return true;
 		} catch (error) {
 			this.logger.error('Failed to delete tenant', { error, id });
