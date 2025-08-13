@@ -81,3 +81,4 @@ export {
 export { OidcConfigDto } from './oidc/config.dto';
 
 export { TenantCreateRequest, TenantUpdateRequest } from './tenant/tenant.dto';
+export { ResolveListTenant } from './tenant/resolve-list-tenant.dto';
