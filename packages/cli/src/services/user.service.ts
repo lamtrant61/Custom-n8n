@@ -1,4 +1,4 @@
-import type { RoleChangeRequestDto } from '@n8n/api-types';
+import type { RoleChangeRequestDto, UserCreateRequestDto } from '@n8n/api-types';
 import { Logger } from '@n8n/backend-common';
 import type { PublicUser } from '@n8n/db';
 import { User, UserRepository } from '@n8n/db';
@@ -8,15 +8,17 @@ import type { IUserSettings } from 'n8n-workflow';
 import { UnexpectedError } from 'n8n-workflow';
 
 import { InternalServerError } from '@/errors/response-errors/internal-server.error';
+import { ForbiddenError } from '@/errors/response-errors/forbidden.error';
 import { EventService } from '@/events/event.service';
 import type { Invitation } from '@/interfaces';
 import type { PostHogClient } from '@/posthog';
 import type { UserRequest } from '@/requests';
+import { PasswordUtility } from '@/services/password.utility';
 import { UrlService } from '@/services/url.service';
 import { UserManagementMailer } from '@/user-management/email';
 
 import { PublicApiKeyService } from './public-api-key.service';
-
+import { generatePassword } from '@/utils/common';
 @Service()
 export class UserService {
 	constructor(
@@ -26,6 +28,7 @@ export class UserService {
 		private readonly urlService: UrlService,
 		private readonly eventService: EventService,
 		private readonly publicApiKeyService: PublicApiKeyService,
+		private readonly passwordUtility: PasswordUtility,
 	) {}
 
 	async update(userId: string, data: Partial<User>) {
@@ -36,6 +39,10 @@ export class UserService {
 		}
 
 		return;
+	}
+
+	async findByEmail(email: string) {
+		return await this.userRepository.findOneByEmail(email);
 	}
 
 	getManager() {
@@ -255,5 +262,36 @@ export class UserService {
 				await this.publicApiKeyService.removeOwnerOnlyScopesFromApiKeys(targetUser, trx);
 			}
 		});
+	}
+
+	async createUser(payload: UserCreateRequestDto, role: number = 2, userTenantId?: string) {
+		const payloadCreateUser = {
+			...payload,
+		} as any;
+		if (!payloadCreateUser.firstName) {
+			payloadCreateUser.firstName = null;
+		}
+		if (!payloadCreateUser.lastName) {
+			payloadCreateUser.lastName = null;
+		}
+		if (payloadCreateUser.tenantRole === '1') {
+			payloadCreateUser.role = 'global:admin';
+		} else if (payloadCreateUser.tenantRole === '2') {
+			payloadCreateUser.role = 'global:member';
+		}
+		if (role === 1) {
+			if (userTenantId && payloadCreateUser.tenantId !== userTenantId) {
+				throw new ForbiddenError('You do not have permission to create users in this tenant');
+			}
+		}
+		const password = generatePassword();
+		payloadCreateUser.password = await this.passwordUtility.hash(password);
+
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+		const newUser = await this.userRepository.createUserWithProject(payloadCreateUser);
+		const userDataReturn = { ...newUser } as any;
+		userDataReturn.user.generatePassword = password; // Vì JSON sẽ ẩn trường password khi return
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-return
+		return userDataReturn;
 	}
 }

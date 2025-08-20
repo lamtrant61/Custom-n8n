@@ -26,6 +26,7 @@ export const RESOURCES = {
 	folder: [...DEFAULT_OPERATIONS, 'move'] as const,
 	insights: ['list'] as const,
 	oidc: ['manage'] as const,
+	tenant: [...DEFAULT_OPERATIONS] as const,
 } as const;
 
 export const API_KEY_RESOURCES = {
@@ -39,4 +40,5 @@ export const API_KEY_RESOURCES = {
 	credential: ['create', 'move', 'delete'] as const,
 	sourceControl: ['pull'] as const,
 	workflowTags: ['update', 'list'] as const,
+	tenant: [...DEFAULT_OPERATIONS] as const,
 } as const;
