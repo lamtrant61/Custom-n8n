@@ -77,6 +77,8 @@ export class UsersListFilterDto extends Z.class({
 	select: userSelectSchema.optional(),
 	filter: filterValidatorSchema.optional(),
 	expand: userExpandSchema.optional(),
+	page: z.string().default('1').optional(),
+	limit: z.string().min(1).default('10').optional(),
 	// Default sort order is role:asc, secondary sort criteria is name:asc
 	sortBy: usersListSortByValidator,
 }) {}
