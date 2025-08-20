@@ -39,6 +39,13 @@ export class UserRepository extends Repository<User> {
 		return await transaction.find(User, { where: { id: In(ids) } });
 	}
 
+	async findOneByEmail(email: string) {
+		return await this.findOne({
+			where: { email },
+			select: ['email', 'firstName', 'lastName', 'tenantId', 'tenantRole', 'id'],
+		});
+	}
+
 	async findManyByEmail(emails: string[]) {
 		return await this.find({
 			where: { email: In(emails) },
@@ -163,6 +170,8 @@ export class UserRepository extends Repository<User> {
 	private applyUserListFilter(
 		queryBuilder: SelectQueryBuilder<User>,
 		filter: UsersListFilterDto['filter'],
+		role?: number,
+		tenantId?: string | null,
 	): SelectQueryBuilder<User> {
 		if (filter?.email !== undefined) {
 			queryBuilder.andWhere('user.email = :email', {
@@ -198,6 +207,12 @@ export class UserRepository extends Repository<User> {
 					role: 'global:owner',
 				});
 			}
+		}
+
+		if (role === 1 || role === 2) {
+			queryBuilder.andWhere('user.tenantId = :tenantId', {
+				tenantId,
+			});
 		}
 
 		if (filter?.fullText !== undefined) {
@@ -272,7 +287,11 @@ export class UserRepository extends Repository<User> {
 		return queryBuilder;
 	}
 
-	buildUserQuery(listQueryOptions?: UsersListFilterDto): SelectQueryBuilder<User> {
+	buildUserQuery(
+		listQueryOptions?: UsersListFilterDto,
+		role: number = 2,
+		tenantId: string | null = null,
+	): SelectQueryBuilder<User> {
 		const queryBuilder = this.createQueryBuilder('user');
 
 		queryBuilder.leftJoinAndSelect('user.authIdentities', 'authIdentities');
@@ -283,7 +302,7 @@ export class UserRepository extends Repository<User> {
 		const { filter, select, take, skip, expand, sortBy } = listQueryOptions;
 
 		this.applyUserListSelect(queryBuilder, select as Array<keyof User>);
-		this.applyUserListFilter(queryBuilder, filter);
+		this.applyUserListFilter(queryBuilder, filter, role, tenantId);
 		this.applyUserListExpand(queryBuilder, expand);
 		this.applyUserListPagination(queryBuilder, take, skip);
 		this.applyUserListSort(queryBuilder, sortBy);
