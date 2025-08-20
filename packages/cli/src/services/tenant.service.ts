@@ -21,7 +21,7 @@ export class TenantService {
 			(page - 1) * limit,
 		);
 		const [rows, total] = await tenantQuery.getManyAndCount();
-		return { rows, total };
+		return { count: total, items: rows };
 	}
 
 	/** Lấy tenant theo ID */
