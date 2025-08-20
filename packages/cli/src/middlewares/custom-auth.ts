@@ -37,6 +37,17 @@ export class AuthMiddleware {
 		this.jwtService = Container.get(JwtService);
 	}
 	authTenant = async (req: Request, res: Response, next: NextFunction) => {
+		const listExcludeAuth = [
+			'/login',
+			'/config.js',
+			'/settings',
+			'/telemetry',
+			'/module-settings',
+			'/events',
+		];
+		if (listExcludeAuth.some((path) => req.path.startsWith(path))) {
+			return next();
+		}
 		const token = req.cookies[AUTH_COOKIE_NAME];
 		if (!token) {
 			return res.status(401).json({ error: 'Unauthorized access - No token provided' });
@@ -45,9 +56,13 @@ export class AuthMiddleware {
 		if (!user) {
 			return res.status(401).json({ error: 'Unauthorized access - Invalid token' });
 		}
-		req.user_info = user;
-		console.log(`User authenticated: ${JSON.stringify(user)}, userrrrrrrrrrrrrrrrrrrrr`);
-
+		req.user_info = {
+			id: user.id,
+			email: user.email,
+			role: user.role,
+			tenantId: user.tenantId,
+			tenantRole: user.tenantRole,
+		};
 		return next();
 	};
 	resolveJwt = async (token: string) => {

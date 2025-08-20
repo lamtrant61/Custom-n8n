@@ -233,8 +233,9 @@ export class Server extends AbstractServer {
 
 		// Parse cookies for easier access
 		this.app.use(cookieParser());
+
 		const authMiddleware = new AuthMiddleware();
-		this.app.use('/workflow', authMiddleware.authTenant as RequestHandler);
+		this.app.use('/rest', authMiddleware.authTenant as RequestHandler);
 
 		const { restEndpoint, app } = this;
 
