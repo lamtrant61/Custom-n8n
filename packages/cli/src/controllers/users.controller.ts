@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import {
 	RoleChangeRequestDto,
 	SettingsUpdateRequestDto,
 	UsersListFilterDto,
+	UserCreateRequestDto,
 	usersListSchema,
 } from '@n8n/api-types';
 import { Logger } from '@n8n/backend-common';
@@ -20,6 +22,7 @@ import {
 	GlobalScope,
 	Delete,
 	Get,
+	Post,
 	RestController,
 	Patch,
 	Licensed,
@@ -40,6 +43,7 @@ import { UserRequest } from '@/requests';
 import { FolderService } from '@/services/folder.service';
 import { ProjectService } from '@/services/project.service.ee';
 import { UserService } from '@/services/user.service';
+import { TenantService } from '@/services/tenant.service';
 import { WorkflowService } from '@/workflows/workflow.service';
 import { hasGlobalScope } from '@n8n/permissions';
 
@@ -53,6 +57,7 @@ export class UsersController {
 		private readonly userRepository: UserRepository,
 		private readonly authService: AuthService,
 		private readonly userService: UserService,
+		private readonly tenantService: TenantService,
 		private readonly projectRepository: ProjectRepository,
 		private readonly workflowService: WorkflowService,
 		private readonly credentialsService: CredentialsService,
@@ -101,7 +106,17 @@ export class UsersController {
 		_res: Response,
 		@Query listQueryOptions: UsersListFilterDto,
 	) {
-		const userQuery = this.userRepository.buildUserQuery(listQueryOptions);
+		if (listQueryOptions.limit) {
+			listQueryOptions.take = parseInt(listQueryOptions.limit) || 10;
+		}
+		if (listQueryOptions.page) {
+			listQueryOptions.skip = (parseInt(listQueryOptions.page) - 1) * listQueryOptions.take || 0;
+		}
+		const userQuery = this.userRepository.buildUserQuery(
+			listQueryOptions,
+			parseInt(String(req.user_info.tenantRole)),
+			String(req.user_info.tenantId),
+		);
 
 		const response = await userQuery.getManyAndCount();
 
@@ -148,6 +163,33 @@ export class UsersController {
 
 		const link = this.authService.generatePasswordResetUrl(user);
 		return { link };
+	}
+
+	@Post('/')
+	@GlobalScope('user:create')
+	async createUser(
+		_req: AuthenticatedRequest,
+		_res: Response,
+		@Body payload: UserCreateRequestDto,
+	) {
+		const { tenantId } = payload;
+		// Kiểm tra trùng tên
+		const existing = await this.userService.findByEmail(payload.email);
+		if (existing) {
+			throw new BadRequestError(`User email "${payload.email}" already exists`);
+		}
+		if (!tenantId) {
+			throw new BadRequestError('Tenant ID is required');
+		}
+		const checkTenant = await this.tenantService.findById(tenantId);
+		if (!checkTenant) {
+			throw new NotFoundError(`Tenant with ID "${tenantId}" not found`);
+		}
+		return await this.userService.createUser(
+			payload,
+			parseInt(String(_req.user_info.tenantRole)),
+			_req.user.tenantId,
+		);
 	}
 
 	@Patch('/:id/settings')

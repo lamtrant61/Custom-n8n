@@ -38,6 +38,11 @@ export const OWNER_API_KEY_SCOPES: ApiKeyScope[] = [
 	'credential:create',
 	'credential:move',
 	'credential:delete',
+	'tenant:read',
+	'tenant:list',
+	'tenant:create',
+	'tenant:update',
+	'tenant:delete',
 ];
 
 export const ADMIN_API_KEY_SCOPES: ApiKeyScope[] = OWNER_API_KEY_SCOPES;
@@ -63,6 +68,8 @@ export const MEMBER_API_KEY_SCOPES: ApiKeyScope[] = [
 	'credential:create',
 	'credential:move',
 	'credential:delete',
+	'tenant:read',
+	'tenant:list',
 ];
 
 const MAP_ROLE_SCOPES: Record<GlobalRole, ApiKeyScope[]> = {

@@ -27,6 +27,9 @@ export class Tenant {
 	@Column()
 	status: boolean;
 
+	@Column()
+	isDeleted: boolean;
+
 	@CreateDateColumn()
 	createdAt: Date;
 

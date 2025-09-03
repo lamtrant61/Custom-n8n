@@ -1,6 +1,6 @@
 import type { MigrationContext, ReversibleMigration } from '../migration-types';
 
-export class CreateTenantId1608421225232 implements ReversibleMigration {
+export class CreateTenantId1652233212434 implements ReversibleMigration {
 	async up({ queryRunner, tablePrefix }: MigrationContext) {
 		// 1. Tạo bảng tenant
 		await queryRunner.query(`
@@ -10,15 +10,22 @@ export class CreateTenantId1608421225232 implements ReversibleMigration {
 				subdomain VARCHAR DEFAULT NULL,
 				logo VARCHAR DEFAULT NULL,
 				status BOOLEAN NOT NULL DEFAULT true,
+				"isDeleted" BOOLEAN NOT NULL DEFAULT false,
 				"createdAt" TIMESTAMP NOT NULL DEFAULT now(),
 				"updatedAt" TIMESTAMP NOT NULL DEFAULT now()
 			)
 		`);
 
-		// 2. Thêm cột tenantId vào bảng "user"
+		// 2. Thêm tenantId
 		await queryRunner.query(`
 			ALTER TABLE "${tablePrefix}user"
 			ADD COLUMN "tenantId" UUID
+		`);
+
+		// Thêm tenantRole
+		await queryRunner.query(`
+			ALTER TABLE "${tablePrefix}user"
+			ADD COLUMN "tenantRole" VARCHAR NOT NULL DEFAULT '2'
 		`);
 
 		// 3. Tạo foreign key từ user.tenantId → tenant.id
@@ -43,7 +50,13 @@ export class CreateTenantId1608421225232 implements ReversibleMigration {
 			DROP COLUMN "tenantId"
 		`);
 
-		// 3. Xoá bảng tenant
+		// 3. Xoá cột tenantRole
+		await queryRunner.query(`
+			ALTER TABLE "${tablePrefix}user"
+			DROP COLUMN "tenantRole"
+		`);
+
+		// 4. Xoá bảng tenant
 		await queryRunner.query(`
 			DROP TABLE ${tablePrefix}tenant
 		`);
