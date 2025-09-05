@@ -409,7 +409,8 @@
       "dist/credentials/ZscalerZiaApi.credentials.js",
       "dist/credentials/ZulipApi.credentials.js",
       "dist/credentials/ICOAuth2Api.credentials.js",
-      "dist/credentials/IC2OAuth2Api.credentials.js"
+      "dist/credentials/IC2OAuth2Api.credentials.js",
+      "dist/credentials/BearerAuthApi.credentials.js"
     ],
     "nodes": [
       "dist/nodes/ActionNetwork/ActionNetwork.node.js",
@@ -850,7 +851,9 @@
       "dist/nodes/Transform/Sort/Sort.node.js",
       "dist/nodes/Transform/Summarize/Summarize.node.js",
       "dist/nodes/CustomNode/CustomNode.node.js",
-      "dist/nodes/CustomNode2/CustomNode2.node.js"
+      "dist/nodes/CustomNode2/CustomNode2.node.js",
+      "dist/nodes/IC/IC.node.js",
+      "dist/nodes/IC/ICTrigger.node.js"
     ]
   },
   "devDependencies": {
