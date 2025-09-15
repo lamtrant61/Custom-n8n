@@ -17,5 +17,13 @@ export class BearerAuthApi implements ICredentialType {
 			placeholder: 'Bearer Token',
 			description: 'Bearer token used to authenticate',
 		},
+		{
+			displayName: 'IC URL',
+			name: 'icUrl',
+			type: 'string',
+			default: '',
+			placeholder: 'IC URL',
+			description: 'IC URL used to authenticate',
+		},
 	];
 }
