@@ -13,8 +13,8 @@ export const userOperations: INodeProperties[] = [
 		},
 		options: [
 			{
-				name: 'Get By ID',
-				value: 'getById',
+				name: 'Get By Username',
+				value: 'getByUsername',
 				action: 'Get user by ID',
 			},
 			{
@@ -23,16 +23,16 @@ export const userOperations: INodeProperties[] = [
 				action: 'Get list users',
 			},
 		],
-		default: 'getById',
+		default: 'getByUsername',
 	},
 ];
 
 export const userFields: INodeProperties[] = [
 	// ----------------------------------------
-	//             user: getById
+	//             user: getByUsername
 	// ----------------------------------------
 	{
-		displayName: 'ID',
+		displayName: 'Username',
 		name: 'id',
 		type: 'string',
 		required: true,
@@ -40,7 +40,7 @@ export const userFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['user'],
-				operation: ['getById'],
+				operation: ['getByUsername'],
 			},
 		},
 		description: 'Get User by ID',

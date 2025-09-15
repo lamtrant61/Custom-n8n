@@ -100,9 +100,9 @@ export class IC implements INodeType {
 					//                                user
 					// **********************************************************************
 
-					if (operation === 'getById') {
+					if (operation === 'Username') {
 						// ----------------------------------------
-						//             user: getById
+						//             user: Username
 						// ----------------------------------------
 
 						const body = {} as IDataObject;
