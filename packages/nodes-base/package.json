@@ -852,8 +852,7 @@
       "dist/nodes/Transform/Summarize/Summarize.node.js",
       "dist/nodes/CustomNode/CustomNode.node.js",
       "dist/nodes/CustomNode2/CustomNode2.node.js",
-      "dist/nodes/IC/IC.node.js",
-      "dist/nodes/IC/ICTrigger.node.js"
+      "dist/nodes/IC/IC.node.js"
     ]
   },
   "devDependencies": {
