@@ -15,7 +15,7 @@ export const userOperations: INodeProperties[] = [
 			{
 				name: 'Get By Username',
 				value: 'getByUsername',
-				action: 'Get user by ID',
+				action: 'Get user by username',
 			},
 			{
 				name: 'Get List',
