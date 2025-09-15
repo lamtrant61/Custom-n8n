@@ -100,13 +100,13 @@ export class IC implements INodeType {
 					//                                user
 					// **********************************************************************
 
-					if (operation === 'Username') {
+					if (operation === 'getByUsername') {
 						// ----------------------------------------
-						//             user: Username
+						//             user: getByUsername
 						// ----------------------------------------
 
 						const body = {} as IDataObject;
-						body.item = this.getNodeParameter('id', i) as string;
+						body.item = this.getNodeParameter('username', i) as string;
 
 						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 						const res = await icApiRequest.call(

@@ -33,7 +33,7 @@ export const userFields: INodeProperties[] = [
 	// ----------------------------------------
 	{
 		displayName: 'Username',
-		name: 'id',
+		name: 'username',
 		type: 'string',
 		required: true,
 		default: '',
@@ -43,7 +43,7 @@ export const userFields: INodeProperties[] = [
 				operation: ['getByUsername'],
 			},
 		},
-		description: 'Get User by ID',
+		description: 'Get user by username',
 	},
 
 	// ----------------------------------------
