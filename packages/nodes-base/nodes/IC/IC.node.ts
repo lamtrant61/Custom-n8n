@@ -4,11 +4,21 @@ import type {
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
+	ICredentialDataDecryptedObject,
 } from 'n8n-workflow';
-import { NodeConnectionTypes } from 'n8n-workflow';
+import { NodeConnectionTypes, NodeApiError } from 'n8n-workflow';
 
-import { userOperations, userFields, customerOperations, customerFields } from './descriptions';
-import { getAttachments } from './GenericFunctions';
+import {
+	userOperations,
+	userFields,
+	customerOperations,
+	customerFields,
+	interactionOperations,
+	interactionFields,
+	ticketOperations,
+	ticketFields,
+} from './descriptions';
+import { icApiRequest } from './GenericFunctions';
 
 export class IC implements INodeType {
 	description: INodeTypeDescription = {
@@ -48,6 +58,14 @@ export class IC implements INodeType {
 						name: 'Customer',
 						value: 'customer',
 					},
+					{
+						name: 'Interaction',
+						value: 'interaction',
+					},
+					{
+						name: 'Ticket',
+						value: 'ticket',
+					},
 				],
 				default: 'user',
 			},
@@ -55,6 +73,10 @@ export class IC implements INodeType {
 			...customerOperations,
 			...userFields,
 			...customerFields,
+			...interactionOperations,
+			...interactionFields,
+			...ticketOperations,
+			...ticketFields,
 		],
 	};
 
@@ -64,6 +86,11 @@ export class IC implements INodeType {
 		// const timezone = this.getTimezone();
 		const resource = this.getNodeParameter('resource', 0);
 		const operation = this.getNodeParameter('operation', 0);
+		const credentials = (await this.getCredentials(
+			'bearerAuthApi',
+		)) as ICredentialDataDecryptedObject;
+		const token = credentials.token as string;
+		const icUrl = credentials.icUrl as string;
 
 		let responseData;
 		for (let i = 0; i < items.length; i++) {
@@ -73,181 +100,70 @@ export class IC implements INodeType {
 					//                                user
 					// **********************************************************************
 
-					if (operation === 'create') {
+					if (operation === 'getById') {
 						// ----------------------------------------
-						//             user: create
+						//             user: getById
 						// ----------------------------------------
 
-						const destination = this.getNodeParameter('destination', i);
-						const file = this.getNodeParameter(
-							'additionalFields.fileUi.fileValue',
-							i,
-							{},
-						) as IDataObject;
-						const markdown = this.getNodeParameter('additionalFields.markdown', i, '') as boolean;
 						const body = {} as IDataObject;
-						if (destination === 'room') {
-							body.roomId = this.getNodeParameter('roomId', i);
-						}
+						body.item = this.getNodeParameter('id', i) as string;
 
-						if (destination === 'person') {
-							const specifyPersonBy = this.getNodeParameter('specifyPersonBy', 0) as string;
-							if (specifyPersonBy === 'id') {
-								body.toPersonId = this.getNodeParameter('toPersonId', i);
-							} else {
-								body.toPersonEmail = this.getNodeParameter('toPersonEmail', i);
-							}
-						}
-
-						if (markdown) {
-							body.markdown = markdown;
-						}
-
-						body.text = this.getNodeParameter('text', i);
-
-						body.attachments = getAttachments(
-							this.getNodeParameter(
-								'additionalFields.attachmentsUi.attachmentValues',
-								i,
-								[],
-							) as IDataObject[],
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+						const res = await icApiRequest.call(
+							this,
+							'POST',
+							token,
+							icUrl,
+							resource,
+							'api/user/get-by-id',
+							body,
 						);
-
-						if (Object.keys(file).length) {
-							const isBinaryData = file.fileLocation === 'binaryData' ? true : false;
-
-							if (isBinaryData) {
-								const binaryPropertyName = file.binaryPropertyName as string;
-								const binaryData = this.helpers.assertBinaryData(i, binaryPropertyName);
-								const binaryDataBuffer = await this.helpers.getBinaryDataBuffer(
-									i,
-									binaryPropertyName,
-								);
-
-								const formData = {
-									files: {
-										value: binaryDataBuffer,
-										options: {
-											filename: binaryData.fileName,
-											contentType: binaryData.mimeType,
-										},
-									},
-								};
-								Object.assign(body, formData);
-							} else {
-								const url = file.url as string;
-								Object.assign(body, { files: url });
-							}
+						// check status code
+						if (res.statusCode !== 200) {
+							throw new NodeApiError(
+								this.getNode(),
+								res.body?.message || 'Unknown error occurred!',
+							);
 						}
-
-						// if (file.fileLocation === 'binaryData') {
-						//     responseData = await webexApiRequest.call(
-						//         this,
-						//         'POST',
-						//         '/messages',
-						//         {},
-						//         {},
-						//         undefined,
-						//         { formData: body },
-						//     );
-						// } else {
-						//     responseData = await webexApiRequest.call(this, 'POST', '/messages', body);
-						// }
 						responseData = this.helpers.constructExecutionMetaData(
-							this.helpers.returnJsonArray(responseData as IDataObject[]),
+							this.helpers.returnJsonArray(res.body?.data as IDataObject[]),
 							{ itemData: { item: i } },
 						);
-					} else if (operation === 'delete') {
+					} else if (operation === 'getList') {
 						// ----------------------------------------
-						//             message: delete
-						// ----------------------------------------
-
-						// https://developer.webex.com/docs/api/v1/messages/delete-a-message
-						// const messageId = this.getNodeParameter('messageId', i);
-
-						// const endpoint = `/messages/${messageId}`;
-						// responseData = await webexApiRequest.call(this, 'DELETE', endpoint);
-						responseData = this.helpers.constructExecutionMetaData(
-							this.helpers.returnJsonArray({ success: true }),
-							{ itemData: { item: i } },
-						);
-					} else if (operation === 'get') {
-						// ----------------------------------------
-						//               message: get
+						//             message: getList
 						// ----------------------------------------
 
-						// https://developer.webex.com/docs/api/v1/messages/get-message-details
-						// const messageId = this.getNodeParameter('messageId', i);
+						const body = {} as IDataObject;
+						body.limit = this.getNodeParameter('limit', i) as number;
+						body.page = this.getNodeParameter('page', i) as number;
 
-						// const endpoint = `/messages/${messageId}`;
-						// responseData = await webexApiRequest.call(this, 'GET', endpoint);
-						responseData = this.helpers.constructExecutionMetaData(
-							this.helpers.returnJsonArray(responseData as IDataObject[]),
-							{ itemData: { item: i } },
-						);
-					} else if (operation === 'getAll') {
-						// ----------------------------------------
-						//             message: getAll
-						// ----------------------------------------
-
-						const qs: IDataObject = {
-							roomId: this.getNodeParameter('roomId', i),
-						};
-						const filters = this.getNodeParameter('filters', i);
-						// const returnAll = this.getNodeParameter('returnAll', i);
-
-						if (Object.keys(filters).length) {
-							Object.assign(qs, filters);
+						const sortObj = this.getNodeParameter('sort', i) as IDataObject;
+						if (sortObj && sortObj.sort) {
+							body.sorts = sortObj.sort;
 						}
 
-						// if (returnAll) {
-						//     responseData = await webexApiRequestAllItems.call(
-						//         this,
-						//         'items',
-						//         'GET',
-						//         '/messages',
-						//         {},
-						//         qs,
-						//     );
-						// } else {
-						//     qs.max = this.getNodeParameter('limit', i);
-						//     // responseData = await webexApiRequest.call(this, 'GET', '/messages', {}, qs);
-						//     responseData = responseData.items;
-						// }
-						// responseData = this.helpers.constructExecutionMetaData(
-						//     this.helpers.returnJsonArray(responseData.items as IDataObject[]),
-						//     { itemData: { item: i } },
-						// );
-						responseData = this.helpers.constructExecutionMetaData(
-							this.helpers.returnJsonArray(responseData as IDataObject[]),
-							{ itemData: { item: i } },
+						const searchListObj = this.getNodeParameter('search_list', i) as IDataObject;
+						if (searchListObj && searchListObj.search) {
+							body.search_list = searchListObj.search;
+						}
+						const res = await icApiRequest.call(
+							this,
+							'POST',
+							token,
+							icUrl,
+							resource,
+							'api/user/get-all',
+							body,
 						);
-					} else if (operation === 'update') {
-						// ----------------------------------------
-						//             message: update
-						// ----------------------------------------
-
-						// https://developer.webex.com/docs/api/v1/messages/edit-a-message
-						// const messageId = this.getNodeParameter('messageId', i) as string;
-						// const markdown = this.getNodeParameter('markdown', i) as boolean;
-
-						// const endpoint = `/messages/${messageId}`;
-
-						// responseData = await webexApiRequest.call(this, 'GET', endpoint);
-
-						// const body = {
-						//     roomId: responseData.roomId,
-						// } as IDataObject;
-
-						// if (markdown) {
-						//     body.markdown = this.getNodeParameter('markdownText', i);
-						// } else {
-						//     body.text = this.getNodeParameter('text', i);
-						// }
-
-						// responseData = await webexApiRequest.call(this, 'PUT', endpoint, body);
+						if (res.statusCode !== 200) {
+							throw new NodeApiError(
+								this.getNode(),
+								res.body?.message || 'Unknown error occurred!',
+							);
+						}
 						responseData = this.helpers.constructExecutionMetaData(
-							this.helpers.returnJsonArray(responseData as IDataObject[]),
+							this.helpers.returnJsonArray(res.body?.data as IDataObject[]),
 							{ itemData: { item: i } },
 						);
 					}
@@ -256,181 +172,484 @@ export class IC implements INodeType {
 					//                                customer
 					// **********************************************************************
 
-					if (operation === 'create') {
+					if (operation === 'getById') {
 						// ----------------------------------------
-						//             customer: create
+						//             customer: getById
 						// ----------------------------------------
 
-						const destination = this.getNodeParameter('destination', i);
-						const file = this.getNodeParameter(
-							'additionalFields.fileUi.fileValue',
-							i,
-							{},
-						) as IDataObject;
-						const markdown = this.getNodeParameter('additionalFields.markdown', i, '') as boolean;
 						const body = {} as IDataObject;
-						if (destination === 'room') {
-							body.roomId = this.getNodeParameter('roomId', i);
-						}
+						body.item = this.getNodeParameter('id', i) as string;
 
-						if (destination === 'person') {
-							const specifyPersonBy = this.getNodeParameter('specifyPersonBy', 0) as string;
-							if (specifyPersonBy === 'id') {
-								body.toPersonId = this.getNodeParameter('toPersonId', i);
-							} else {
-								body.toPersonEmail = this.getNodeParameter('toPersonEmail', i);
-							}
-						}
-
-						if (markdown) {
-							body.markdown = markdown;
-						}
-
-						body.text = this.getNodeParameter('text', i);
-
-						body.attachments = getAttachments(
-							this.getNodeParameter(
-								'additionalFields.attachmentsUi.attachmentValues',
-								i,
-								[],
-							) as IDataObject[],
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+						const res = await icApiRequest.call(
+							this,
+							'POST',
+							token,
+							icUrl,
+							'idstore',
+							'api/customer/get-by-id',
+							body,
 						);
-
-						if (Object.keys(file).length) {
-							const isBinaryData = file.fileLocation === 'binaryData' ? true : false;
-
-							if (isBinaryData) {
-								const binaryPropertyName = file.binaryPropertyName as string;
-								const binaryData = this.helpers.assertBinaryData(i, binaryPropertyName);
-								const binaryDataBuffer = await this.helpers.getBinaryDataBuffer(
-									i,
-									binaryPropertyName,
-								);
-
-								const formData = {
-									files: {
-										value: binaryDataBuffer,
-										options: {
-											filename: binaryData.fileName,
-											contentType: binaryData.mimeType,
-										},
-									},
-								};
-								Object.assign(body, formData);
-							} else {
-								const url = file.url as string;
-								Object.assign(body, { files: url });
-							}
+						// check status code
+						if (res.statusCode !== 200) {
+							throw new NodeApiError(
+								this.getNode(),
+								res.body?.message || 'Unknown error occurred!',
+							);
 						}
-
-						// if (file.fileLocation === 'binaryData') {
-						//     responseData = await webexApiRequest.call(
-						//         this,
-						//         'POST',
-						//         '/messages',
-						//         {},
-						//         {},
-						//         undefined,
-						//         { formData: body },
-						//     );
-						// } else {
-						//     responseData = await webexApiRequest.call(this, 'POST', '/messages', body);
-						// }
 						responseData = this.helpers.constructExecutionMetaData(
-							this.helpers.returnJsonArray(responseData as IDataObject[]),
+							this.helpers.returnJsonArray(res.body?.data as IDataObject[]),
 							{ itemData: { item: i } },
 						);
-					} else if (operation === 'delete') {
+					} else if (operation === 'getBySocialId') {
 						// ----------------------------------------
-						//             customer: delete
+						//             customer: getBySocialId
 						// ----------------------------------------
 
-						// https://developer.webex.com/docs/api/v1/messages/delete-a-message
-						// const messageId = this.getNodeParameter('messageId', i);
+						const body = {} as IDataObject;
+						body.item = this.getNodeParameter('id', i) as string;
 
-						// const endpoint = `/messages/${messageId}`;
-						// responseData = await webexApiRequest.call(this, 'DELETE', endpoint);
-						responseData = this.helpers.constructExecutionMetaData(
-							this.helpers.returnJsonArray({ success: true }),
-							{ itemData: { item: i } },
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+						const res = await icApiRequest.call(
+							this,
+							'POST',
+							token,
+							icUrl,
+							'idstore',
+							'api/customer/get-by-user-social-id',
+							body,
 						);
-					} else if (operation === 'get') {
-						// ----------------------------------------
-						//               customer: get
-						// ----------------------------------------
-
-						// https://developer.webex.com/docs/api/v1/messages/get-message-details
-						// const messageId = this.getNodeParameter('messageId', i);
-
-						// const endpoint = `/messages/${messageId}`;
-						// responseData = await webexApiRequest.call(this, 'GET', endpoint);
-						responseData = this.helpers.constructExecutionMetaData(
-							this.helpers.returnJsonArray(responseData as IDataObject[]),
-							{ itemData: { item: i } },
-						);
-					} else if (operation === 'getAll') {
-						// ----------------------------------------
-						//             customer: getAll
-						// ----------------------------------------
-
-						const qs: IDataObject = {
-							roomId: this.getNodeParameter('roomId', i),
-						};
-						const filters = this.getNodeParameter('filters', i);
-						// const returnAll = this.getNodeParameter('returnAll', i);
-
-						if (Object.keys(filters).length) {
-							Object.assign(qs, filters);
+						// check status code
+						if (res.statusCode !== 200) {
+							throw new NodeApiError(
+								this.getNode(),
+								res.body?.message || 'Unknown error occurred!',
+							);
 						}
-
-						// if (returnAll) {
-						//     responseData = await webexApiRequestAllItems.call(
-						//         this,
-						//         'items',
-						//         'GET',
-						//         '/messages',
-						//         {},
-						//         qs,
-						//     );
-						// } else {
-						//     qs.max = this.getNodeParameter('limit', i);
-						//     // responseData = await webexApiRequest.call(this, 'GET', '/messages', {}, qs);
-						//     responseData = responseData.items;
-						// }
-						// responseData = this.helpers.constructExecutionMetaData(
-						//     this.helpers.returnJsonArray(responseData.items as IDataObject[]),
-						//     { itemData: { item: i } },
-						// );
 						responseData = this.helpers.constructExecutionMetaData(
-							this.helpers.returnJsonArray(responseData as IDataObject[]),
+							this.helpers.returnJsonArray(res.body?.data as IDataObject[]),
 							{ itemData: { item: i } },
 						);
 					} else if (operation === 'update') {
 						// ----------------------------------------
 						//             customer: update
 						// ----------------------------------------
+						const body = {} as IDataObject;
+						body.id = this.getNodeParameter('id', i) as string;
 
-						// https://developer.webex.com/docs/api/v1/messages/edit-a-message
-						// const messageId = this.getNodeParameter('messageId', i) as string;
-						// const markdown = this.getNodeParameter('markdown', i) as boolean;
+						const customer_name = this.getNodeParameter('customer_name', i) as string;
+						if (customer_name) body.customer_name = customer_name;
 
-						// const endpoint = `/messages/${messageId}`;
+						const birth_date = this.getNodeParameter('birth_date', i) as string;
+						if (birth_date) body.birth_date = birth_date;
 
-						// responseData = await webexApiRequest.call(this, 'GET', endpoint);
+						const avatar = this.getNodeParameter('avatar', i) as string;
+						if (avatar) body.avatar = avatar;
 
-						// const body = {
-						//     roomId: responseData.roomId,
-						// } as IDataObject;
+						const address = this.getNodeParameter('address', i) as string;
+						if (address) body.address = address;
 
-						// if (markdown) {
-						//     body.markdown = this.getNodeParameter('markdownText', i);
-						// } else {
-						//     body.text = this.getNodeParameter('text', i);
-						// }
+						const email = this.getNodeParameter('email', i) as string;
+						if (email) body.email = email;
 
-						// responseData = await webexApiRequest.call(this, 'PUT', endpoint, body);
+						const phone = this.getNodeParameter('phone', i) as string;
+						if (phone) body.phone = phone;
+
+						const language = this.getNodeParameter('language', i) as string;
+						if (language) body.language = language;
+
+						const country = this.getNodeParameter('country', i) as string;
+						if (country) body.country = country;
+
+						body.is_new_customer_webchat = false;
+
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+						const res = await icApiRequest.call(
+							this,
+							'POST',
+							token,
+							icUrl,
+							'idstore',
+							'api/customer/update',
+							body,
+						);
+						// check status code
+						if (res.statusCode !== 200) {
+							throw new NodeApiError(
+								this.getNode(),
+								res.body?.message || 'Unknown error occurred!',
+							);
+						}
+
 						responseData = this.helpers.constructExecutionMetaData(
-							this.helpers.returnJsonArray(responseData as IDataObject[]),
+							this.helpers.returnJsonArray(res.body?.data as IDataObject[]),
+							{ itemData: { item: i } },
+						);
+					}
+				} else if (resource === 'interaction') {
+					// **********************************************************************
+					//                                interaction
+					// **********************************************************************
+
+					if (operation === 'getById') {
+						// ----------------------------------------
+						//             interaction: getById
+						// ----------------------------------------
+
+						const body = {} as IDataObject;
+						body.item = this.getNodeParameter('id', i) as string;
+
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+						const res = await icApiRequest.call(
+							this,
+							'POST',
+							token,
+							icUrl,
+							'idstore',
+							'api/interaction/get-by-id',
+							body,
+						);
+						// check status code
+						if (res.statusCode !== 200) {
+							throw new NodeApiError(
+								this.getNode(),
+								res.body?.message || 'Unknown error occurred!',
+							);
+						}
+						responseData = this.helpers.constructExecutionMetaData(
+							this.helpers.returnJsonArray(res.body?.data as IDataObject[]),
+							{ itemData: { item: i } },
+						);
+					} else if (operation === 'update') {
+						// ----------------------------------------
+						//             interaction: update
+						// ----------------------------------------
+						const body = {} as IDataObject;
+						body.id = this.getNodeParameter('id', i) as string;
+
+						const customer_id = this.getNodeParameter('customer_id', i) as string;
+						if (customer_id) body.customer_id = customer_id;
+
+						const user_social_id = this.getNodeParameter('user_social_id', i) as string;
+						if (user_social_id) body.user_social_id = user_social_id;
+
+						const page_social_id = this.getNodeParameter('page_social_id', i) as string;
+						if (page_social_id) body.page_social_id = page_social_id;
+
+						const channel_type = this.getNodeParameter('channel_type', i) as string;
+						if (channel_type) body.channel_type = channel_type;
+
+						const state = this.getNodeParameter('state', i) as string;
+						if (state) body.state = state;
+
+						const app_id = this.getNodeParameter('app_id', i) as string;
+						if (app_id) body.app_id = app_id;
+
+						const source_address = this.getNodeParameter('source_address', i) as string;
+						if (source_address) body.source_address = source_address;
+
+						const tenant_id = this.getNodeParameter('tenant_id', i) as string;
+						if (tenant_id) body.tenant_id = tenant_id;
+
+						const is_active = this.getNodeParameter('is_active', i) as boolean;
+						body.is_active = is_active;
+
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+						const res = await icApiRequest.call(
+							this,
+							'POST',
+							token,
+							icUrl,
+							'idstore',
+							'api/interaction/update',
+							body,
+						);
+						// check status code
+						if (res.statusCode !== 200) {
+							throw new NodeApiError(
+								this.getNode(),
+								res.body?.message || 'Unknown error occurred!',
+							);
+						}
+
+						responseData = this.helpers.constructExecutionMetaData(
+							this.helpers.returnJsonArray(res.body?.data as IDataObject[]),
+							{ itemData: { item: i } },
+						);
+					} else if (operation === 'getListDetail') {
+						// ----------------------------------------
+						//             message: getListDetail
+						// ----------------------------------------
+
+						const body = {} as IDataObject;
+						body.limit = this.getNodeParameter('limit', i) as number;
+						body.page = this.getNodeParameter('page', i) as number;
+
+						const interaction_id = this.getNodeParameter('interaction_id', i) as string;
+						if (interaction_id) body.interaction_id = interaction_id;
+
+						const user_social_id = this.getNodeParameter('user_social_id', i) as string;
+						if (user_social_id) body.user_social_id = user_social_id;
+
+						const search_text = this.getNodeParameter('search_text', i) as string;
+						if (search_text) body.search_text = search_text;
+
+						const is_all = this.getNodeParameter('is_all', i) as boolean;
+						body.is_all = is_all;
+
+						const res = await icApiRequest.call(
+							this,
+							'POST',
+							token,
+							icUrl,
+							'idstore',
+							'api/interactiondetail/get-list-interaction-detail',
+							body,
+						);
+						if (res.statusCode !== 200) {
+							throw new NodeApiError(
+								this.getNode(),
+								res.body?.message || 'Unknown error occurred!',
+							);
+						}
+						responseData = this.helpers.constructExecutionMetaData(
+							this.helpers.returnJsonArray(res.body?.data as IDataObject[]),
+							{ itemData: { item: i } },
+						);
+					} else if (operation === 'addTag') {
+						// ----------------------------------------
+						//             interaction: addTag
+						// ----------------------------------------
+						const body = {} as IDataObject;
+						body.id = this.getNodeParameter('id', i) as string;
+
+						const interaction_id = this.getNodeParameter('interaction_id', i) as string;
+						if (interaction_id) body.interaction_id = interaction_id;
+
+						const interactiondetail_id = this.getNodeParameter('interactiondetail_id', i) as string;
+						if (interactiondetail_id) body.interactiondetail_id = interactiondetail_id;
+
+						const customer_id = this.getNodeParameter('customer_id', i) as string;
+						if (customer_id) body.customer_id = customer_id;
+
+						const ticket_id = this.getNodeParameter('ticket_id', i) as string;
+						if (ticket_id) body.ticket_id = ticket_id;
+
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+						const res = await icApiRequest.call(
+							this,
+							'POST',
+							token,
+							icUrl,
+							'idstore',
+							'api/interaction-tag/add-tag-to-interaction',
+							body,
+						);
+						// check status code
+						if (res.statusCode !== 200) {
+							throw new NodeApiError(
+								this.getNode(),
+								res.body?.message || 'Unknown error occurred!',
+							);
+						}
+
+						responseData = this.helpers.constructExecutionMetaData(
+							this.helpers.returnJsonArray(res.body?.data as IDataObject[]),
+							{ itemData: { item: i } },
+						);
+					}
+				} else if (resource === 'ticket') {
+					// **********************************************************************
+					//                                ticket
+					// **********************************************************************
+
+					if (operation === 'create') {
+						// ----------------------------------------
+						//             ticket: create
+						// ----------------------------------------
+						const body = {} as IDataObject;
+
+						const title = this.getNodeParameter('title', i) as string;
+						if (title) body.title = title;
+
+						const channel_type = this.getNodeParameter('channel_type', i) as string;
+						if (channel_type) body.channel_type = channel_type;
+
+						const customer_id = this.getNodeParameter('customer_id', i) as string;
+						if (customer_id) body.customer_id = customer_id;
+
+						const content = this.getNodeParameter('content', i) as string;
+						if (content) body.content = content;
+
+						const status = this.getNodeParameter('status', i) as string;
+						if (status) body.status = status;
+
+						const assign_to = this.getNodeParameter('assign_to', i) as string;
+						if (assign_to) body.assign_to = assign_to;
+
+						const priority = this.getNodeParameter('priority', i) as string;
+						if (priority) body.priority = priority;
+
+						const list_interactionid = this.getNodeParameter('list_interactionid', i) as string[];
+						if (list_interactionid) body.list_interactionid = list_interactionid;
+
+						const ticketNotes = this.getNodeParameter('ticketNotes', i) as IDataObject;
+						if (ticketNotes && ticketNotes.note) {
+							body.ticketNotes = ticketNotes.note;
+						}
+
+						const ticketFileUploads = this.getNodeParameter('ticketFileUploads', i) as IDataObject;
+						if (ticketFileUploads && ticketFileUploads.file) {
+							body.ticketFileUploads = ticketFileUploads.file;
+						}
+
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+						const res = await icApiRequest.call(
+							this,
+							'POST',
+							token,
+							icUrl,
+							'idstore',
+							'api/ticket/create',
+							body,
+						);
+						// check status code
+						if (res.statusCode !== 200) {
+							throw new NodeApiError(
+								this.getNode(),
+								res.body?.message || 'Unknown error occurred!',
+							);
+						}
+
+						responseData = this.helpers.constructExecutionMetaData(
+							this.helpers.returnJsonArray(res.body?.data as IDataObject[]),
+							{ itemData: { item: i } },
+						);
+					} else if (operation === 'update') {
+						// ----------------------------------------
+						//             ticket: update
+						// ----------------------------------------
+						const body = {} as IDataObject;
+
+						body.id = this.getNodeParameter('id', i) as string;
+						body.ticket_no = this.getNodeParameter('ticket_no', i) as string;
+
+						const title = this.getNodeParameter('title', i) as string;
+						if (title) body.title = title;
+
+						const channel_type = this.getNodeParameter('channel_type', i) as string;
+						if (channel_type) body.channel_type = channel_type;
+
+						const customer_id = this.getNodeParameter('customer_id', i) as string;
+						if (customer_id) body.customer_id = customer_id;
+
+						const content = this.getNodeParameter('content', i) as string;
+						if (content) body.content = content;
+
+						const status = this.getNodeParameter('status', i) as string;
+						if (status) body.status = status;
+
+						const assign_to = this.getNodeParameter('assign_to', i) as string;
+						if (assign_to) body.assign_to = assign_to;
+
+						const priority = this.getNodeParameter('priority', i) as string;
+						if (priority) body.priority = priority;
+
+						const list_interactionid = this.getNodeParameter('list_interactionid', i) as string[];
+						if (list_interactionid) body.list_interactionid = list_interactionid;
+
+						const ticketNotes = this.getNodeParameter('ticketNotes', i) as IDataObject;
+						if (ticketNotes && ticketNotes.note) {
+							body.ticketNotes = ticketNotes.note;
+						}
+
+						const ticketFileUploads = this.getNodeParameter('ticketFileUploads', i) as IDataObject;
+						if (ticketFileUploads && ticketFileUploads.file) {
+							body.ticketFileUploads = ticketFileUploads.file;
+						}
+
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+						const res = await icApiRequest.call(
+							this,
+							'POST',
+							token,
+							icUrl,
+							'idstore',
+							'api/ticket/update',
+							body,
+						);
+						// check status code
+						if (res.statusCode !== 200) {
+							throw new NodeApiError(
+								this.getNode(),
+								res.body?.message || 'Unknown error occurred!',
+							);
+						}
+
+						responseData = this.helpers.constructExecutionMetaData(
+							this.helpers.returnJsonArray(res.body?.data as IDataObject[]),
+							{ itemData: { item: i } },
+						);
+					} else if (operation === 'delete') {
+						// ----------------------------------------
+						//             ticket: delete
+						// ----------------------------------------
+						const body = {} as IDataObject;
+
+						body.item = this.getNodeParameter('id', i) as string;
+
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+						const res = await icApiRequest.call(
+							this,
+							'POST',
+							token,
+							icUrl,
+							'idstore',
+							'api/ticket/delete',
+							body,
+						);
+						// check status code
+						if (res.statusCode !== 200) {
+							throw new NodeApiError(
+								this.getNode(),
+								res.body?.message || 'Unknown error occurred!',
+							);
+						}
+
+						responseData = this.helpers.constructExecutionMetaData(
+							this.helpers.returnJsonArray(res.body?.data as IDataObject[]),
+							{ itemData: { item: i } },
+						);
+					} else if (operation === 'check') {
+						// ----------------------------------------
+						//             ticket: check
+						// ----------------------------------------
+						const body = {} as IDataObject;
+
+						body.interaction_id = this.getNodeParameter('interaction_id', i) as string;
+						const tenant_id = this.getNodeParameter('tenant_id', i) as string;
+						if (tenant_id) body.tenant_id = tenant_id;
+
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+						const res = await icApiRequest.call(
+							this,
+							'POST',
+							token,
+							icUrl,
+							'idstore',
+							'api/ticket/check-ticket',
+							body,
+						);
+						// check status code
+						if (res.statusCode !== 200) {
+							throw new NodeApiError(
+								this.getNode(),
+								res.body?.message || 'Unknown error occurred!',
+							);
+						}
+
+						responseData = this.helpers.constructExecutionMetaData(
+							this.helpers.returnJsonArray(res.body?.data as IDataObject[]),
 							{ itemData: { item: i } },
 						);
 					}
