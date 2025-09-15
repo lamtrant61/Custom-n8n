@@ -1,4 +1,5 @@
 import { createHash } from 'crypto';
+import * as jwt from 'jsonwebtoken';
 import upperFirst from 'lodash/upperFirst';
 import type {
 	ICredentialDataDecryptedObject,
@@ -8,78 +9,77 @@ import type {
 	IHttpRequestMethods,
 	ILoadOptionsFunctions,
 	INodeProperties,
-	IRequestOptions,
+	IHttpRequestOptions,
 	IWebhookFunctions,
 	JsonObject,
 } from 'n8n-workflow';
 import { NodeApiError } from 'n8n-workflow';
 
-export async function webexApiRequest(
+export type TokenPayload = {
+	name: string;
+	[key: string]: any;
+};
+
+export async function icApiRequest(
 	this: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions | IWebhookFunctions,
 	method: IHttpRequestMethods,
+	token: string,
+	uri: string,
 	resource: string,
-
+	path: string = '',
 	body: any = {},
-	qs: IDataObject = {},
-	uri?: string,
-	option: IDataObject = {},
 ): Promise<any> {
-	let options: IRequestOptions = {
+	const options: IHttpRequestOptions = {
 		method,
 		body,
-		qs,
-		uri: uri || `https://webexapis.com/v1${resource}`,
+		headers: {
+			Authorization: `Bearer ${token}`,
+			Accept: 'application/json',
+		},
+		// eslint-disable-next-line no-constant-binary-expression
+		url: `${uri}/${resource}/${path}` || `https://portal.basebs.net/konglab/${resource}`,
 		json: true,
+		returnFullResponse: true,
 	};
 	try {
-		if (Object.keys(option).length !== 0) {
-			options = Object.assign({}, options, option);
-		}
-		if (Object.keys(body as IDataObject).length === 0) {
-			delete options.body;
-		}
-		if (Object.keys(qs).length === 0) {
-			delete options.qs;
-		}
-		return await this.helpers.requestOAuth2.call(this, 'ciscoWebexOAuth2Api', options, {
-			tokenType: 'Bearer',
-		});
+		console.log('options', options);
+		return await this.helpers.httpRequest(options);
 	} catch (error) {
 		throw new NodeApiError(this.getNode(), error as JsonObject);
 	}
 }
 
-export async function webexApiRequestAllItems(
-	this: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions,
-	propertyName: string,
-	method: IHttpRequestMethods,
-	endpoint: string,
+// export async function webexApiRequestAllItems(
+// 	this: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions,
+// 	propertyName: string,
+// 	method: IHttpRequestMethods,
+// 	endpoint: string,
 
-	body: any = {},
-	query: IDataObject = {},
-	options: IDataObject = {},
-): Promise<any> {
-	const returnData: IDataObject[] = [];
+// 	body: any = {},
+// 	query: IDataObject = {},
+// 	options: IDataObject = {},
+// ): Promise<any> {
+// 	const returnData: IDataObject[] = [];
 
-	let responseData;
-	let uri: string | undefined;
-	query.max = 100;
-	do {
-		responseData = await webexApiRequest.call(this, method, endpoint, body, query, uri, {
-			resolveWithFullResponse: true,
-			...options,
-		});
-		if (responseData.headers.link) {
-			uri = responseData.headers.link.split(';')[0].replace('<', '').replace('>', '');
-		}
-		returnData.push.apply(returnData, responseData.body[propertyName] as IDataObject[]);
-	} while (responseData.headers.link?.includes('rel="next"'));
-	return returnData;
-}
+// 	let responseData;
+// 	let uri: string | undefined;
+// 	query.max = 100;
+// 	do {
+// 		responseData = await webexApiRequest.call(this, method, endpoint, body, query, uri, {
+// 			resolveWithFullResponse: true,
+// 			...options,
+// 		});
+// 		if (responseData.headers.link) {
+// 			uri = responseData.headers.link.split(';')[0].replace('<', '').replace('>', '');
+// 		}
+// 		returnData.push.apply(returnData, responseData.body[propertyName] as IDataObject[]);
+// 	} while (responseData.headers.link?.includes('rel="next"'));
+// 	return returnData;
+// }
 
 export function getEvents() {
 	const resourceEvents: { [key: string]: string[] } = {
-		message: ['send', 'receive', '*'],
+		chat: ['sended', 'received', 'ended', '*'],
 		// attachmentAction: ['created', 'deleted', 'updated', '*'],
 		// membership: ['created', 'deleted', 'updated', '*'],
 		// message: ['created', 'deleted', 'updated', '*'],
@@ -116,6 +116,7 @@ export function getEvents() {
 export function mapResource(event: string) {
 	return (
 		{
+			chat: 'chats',
 			attachmentAction: 'attachmentActions',
 			membership: 'memberships',
 			message: 'messages',
@@ -630,4 +631,23 @@ export function getInputTextProperties(): INodeProperties[] {
 export function getAutomaticSecret(credentials: ICredentialDataDecryptedObject) {
 	const data = `${credentials.clientId},${credentials.clientSecret}`;
 	return createHash('md5').update(data).digest('hex');
+}
+
+const JWT_SECRET = 'n8n-ic-webhook-secret';
+
+export function createToken(payload: TokenPayload): string {
+	const signOptions: jwt.SignOptions = {
+		algorithm: 'HS256',
+	};
+
+	return jwt.sign(payload, JWT_SECRET, signOptions);
+}
+
+export function verifyToken(token: string): TokenPayload | null {
+	try {
+		return jwt.verify(token, JWT_SECRET) as TokenPayload;
+	} catch (error) {
+		console.error('Invalid token:', error);
+		return null;
+	}
 }
