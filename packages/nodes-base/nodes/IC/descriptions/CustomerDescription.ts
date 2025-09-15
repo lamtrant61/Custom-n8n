@@ -17,11 +17,11 @@ export const customerOperations: INodeProperties[] = [
 				value: 'getById',
 				action: 'Get customer by ID',
 			},
-			{
-				name: 'Get By Social ID',
-				value: 'getBySocialId',
-				action: 'Get customer by social ID',
-			},
+			// {
+			// 	name: 'Get By Social ID',
+			// 	value: 'getBySocialId',
+			// 	action: 'Get customer by social ID',
+			// },
 			{
 				name: 'Update',
 				value: 'update',

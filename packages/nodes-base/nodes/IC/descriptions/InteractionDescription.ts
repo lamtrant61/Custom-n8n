@@ -17,11 +17,11 @@ export const interactionOperations: INodeProperties[] = [
 				value: 'getById',
 				action: 'Get interaction by ID',
 			},
-			{
-				name: 'Update',
-				value: 'update',
-				action: 'Update interaction',
-			},
+			// {
+			// 	name: 'Update',
+			// 	value: 'update',
+			// 	action: 'Update interaction',
+			// },
 			{
 				name: 'Get List Detail',
 				value: 'getListDetail',
