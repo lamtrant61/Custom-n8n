@@ -13,303 +13,42 @@ export const userOperations: INodeProperties[] = [
 		},
 		options: [
 			{
-				name: 'Create',
-				value: 'create',
-				action: 'Create user',
+				name: 'Get By ID',
+				value: 'getById',
+				action: 'Get user by ID',
 			},
 			{
-				name: 'Delete',
-				value: 'delete',
-				action: 'Delete user',
-			},
-			{
-				name: 'Get',
-				value: 'get',
-				action: 'Get user',
-			},
-			{
-				name: 'Get Many',
-				value: 'getAll',
-				action: 'Get many users',
-			},
-			{
-				name: 'Update',
-				value: 'update',
-				action: 'Update user',
+				name: 'Get List',
+				value: 'getList',
+				action: 'Get list users',
 			},
 		],
-		default: 'create',
+		default: 'getById',
 	},
 ];
 
 export const userFields: INodeProperties[] = [
 	// ----------------------------------------
-	//             user: create
+	//             user: getById
 	// ----------------------------------------
 	{
-		displayName: 'Title',
-		name: 'title',
+		displayName: 'ID',
+		name: 'id',
 		type: 'string',
 		required: true,
 		default: '',
 		displayOptions: {
 			show: {
 				resource: ['user'],
-				operation: ['create'],
+				operation: ['getById'],
 			},
 		},
-		description: 'User title. The title can be a maximum of 128 characters long.',
-	},
-	{
-		displayName: 'Start',
-		name: 'start',
-		type: 'dateTime',
-		required: true,
-		default: '',
-		displayOptions: {
-			show: {
-				resource: ['user'],
-				operation: ['create'],
-			},
-		},
-		description:
-			'Date and time for the start of the user. Acceptable <a href="https://datatracker.ietf.org/doc/html/rfc2445"> format</a>.',
-	},
-	{
-		displayName: 'End',
-		name: 'end',
-		type: 'dateTime',
-		required: true,
-		default: '',
-		displayOptions: {
-			show: {
-				resource: ['user'],
-				operation: ['create'],
-			},
-		},
-		description:
-			'Date and time for the end of the user. Acceptable <a href="https://datatracker.ietf.org/doc/html/rfc2445"> format</a>.',
-	},
-	{
-		displayName: 'Additional Fields',
-		name: 'additionalFields',
-		type: 'collection',
-		displayOptions: {
-			show: {
-				resource: ['user'],
-				operation: ['create'],
-			},
-		},
-		default: {},
-		placeholder: 'Add Field',
-		options: [
-			{
-				displayName: 'Agenda',
-				name: 'agenda',
-				type: 'string',
-				default: '',
-				description: 'User agenda. The agenda can be a maximum of 1300 characters long.',
-			},
-			{
-				displayName: 'Allow Any User To Be Co-Host',
-				name: 'allowAnyUserToBeCoHost',
-				type: 'boolean',
-				default: false,
-				description:
-					'Whether or not to allow any attendee with a host account on the target site to become a co-host when joining the meeting',
-			},
-			{
-				displayName: 'Invitees',
-				name: 'inviteesUi',
-				type: 'fixedCollection',
-				typeOptions: {
-					multipleValues: true,
-				},
-				default: {},
-				placeholder: 'Add Invitee',
-				options: [
-					{
-						displayName: 'Invitee',
-						name: 'inviteeValues',
-						values: [
-							{
-								displayName: 'Email',
-								name: 'email',
-								type: 'string',
-								placeholder: 'name@email.com',
-								required: true,
-								default: '',
-								description: 'Email address of meeting invitee',
-							},
-							{
-								displayName: 'Display Name',
-								name: 'displayName',
-								type: 'string',
-								default: '',
-								description: 'Display name of meeting invitee',
-							},
-							{
-								displayName: 'Co-Host',
-								name: 'coHost',
-								type: 'boolean',
-								default: false,
-								description: 'Whether or not invitee is allowed to be a co-host for the meeting',
-							},
-						],
-					},
-				],
-			},
-			{
-				displayName: 'Join Before Host Minutes',
-				name: 'joinBeforeHostMinutes',
-				type: 'options',
-				options: [
-					{
-						name: '0',
-						value: 0,
-					},
-					{
-						name: '5',
-						value: 5,
-					},
-					{
-						name: '10',
-						value: 10,
-					},
-					{
-						name: '15',
-						value: 15,
-					},
-				],
-				default: 0,
-				description:
-					'The number of minutes an attendee can join the meeting before the meeting start time and the host joins',
-			},
-		],
+		description: 'Get User by ID',
 	},
 
 	// ----------------------------------------
-	//             user: delete
+	//             user: getList
 	// ----------------------------------------
-	{
-		displayName: 'User ID',
-		name: 'userId',
-		type: 'string',
-		required: true,
-		default: '',
-		displayOptions: {
-			show: {
-				resource: ['user'],
-				operation: ['delete'],
-			},
-		},
-		description: 'ID of the user',
-	},
-	{
-		displayName: 'Options',
-		name: 'options',
-		type: 'collection',
-		placeholder: 'Add option',
-		default: {},
-		displayOptions: {
-			show: {
-				resource: ['user'],
-				operation: ['delete'],
-			},
-		},
-		options: [
-			{
-				displayName: 'Host Email',
-				name: 'hostEmail',
-				type: 'string',
-				default: '',
-				description:
-					'Email address for the user host. This parameter is only used if the user or application calling the API has the admin-level scopes.',
-			},
-			{
-				displayName: 'Send Email',
-				name: 'sendEmail',
-				type: 'boolean',
-				default: true,
-				description: 'Whether or not to send emails to host and invitees',
-			},
-		],
-	},
-
-	// ----------------------------------------
-	//               user: get
-	// ----------------------------------------
-	{
-		displayName: 'User ID',
-		name: 'userId',
-		type: 'string',
-		required: true,
-		default: '',
-		displayOptions: {
-			show: {
-				resource: ['user'],
-				operation: ['get'],
-			},
-		},
-		description: 'ID of the user',
-	},
-	{
-		displayName: 'Options',
-		name: 'options',
-		type: 'collection',
-		placeholder: 'Add option',
-		default: {},
-		displayOptions: {
-			show: {
-				resource: ['user'],
-				operation: ['get'],
-			},
-		},
-		options: [
-			{
-				displayName: 'Host Email',
-				name: 'hostEmail',
-				type: 'string',
-				default: '',
-				description:
-					'Email address for the meeting host. This parameter is only used if the user or application calling the API has the admin-level scopes.',
-			},
-			{
-				displayName: 'Password',
-				name: 'password',
-				type: 'string',
-				typeOptions: { password: true },
-				default: '',
-				description:
-					"Meeting password. It's required when the meeting is protected by a password and the current user is not privileged to view it if they are not a host, co-host or invitee of the meeting.",
-			},
-			{
-				displayName: 'Send Email',
-				name: 'sendEmail',
-				type: 'boolean',
-				default: true,
-				description:
-					'Whether or not to send emails to host and invitees. It is an optional field and default value is true.',
-			},
-		],
-	},
-
-	// ----------------------------------------
-	//             user: getAll
-	// ----------------------------------------
-	{
-		displayName: 'Return All',
-		name: 'returnAll',
-		type: 'boolean',
-		default: false,
-		description: 'Whether to return all results or only up to a given limit',
-		displayOptions: {
-			show: {
-				resource: ['user'],
-				operation: ['getAll'],
-			},
-		},
-	},
 	{
 		displayName: 'Limit',
 		name: 'limit',
@@ -322,466 +61,160 @@ export const userFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['user'],
-				operation: ['getAll'],
-				returnAll: [false],
+				operation: ['getList'],
 			},
 		},
 	},
 	{
-		displayName: 'Filters',
-		name: 'filters',
-		type: 'collection',
-		placeholder: 'Add Filter',
-		default: {},
+		displayName: 'Page',
+		name: 'page',
+		type: 'number',
+		default: 1,
+		description: 'Page number to retrieve',
+		typeOptions: {
+			minValue: 1,
+		},
 		displayOptions: {
 			show: {
 				resource: ['user'],
-				operation: ['getAll'],
+				operation: ['getList'],
+			},
+		},
+	},
+	// {
+	// 	displayName: 'Sort',
+	// 	name: 'sort',
+	// 	type: 'collection',
+	// 	placeholder: 'Add Sort',
+	// 	default: {},
+	// 	displayOptions: {
+	// 		show: {
+	// 			resource: ['user'],
+	// 			operation: ['getList'],
+	// 		},
+	// 	},
+	// 	options: [
+	// 		{
+	// 			displayName: 'Name Field',
+	// 			name: 'nameField',
+	// 			type: 'string',
+	// 			default: '',
+	// 			description: 'Field name to sort by',
+	// 		},
+	// 		{
+	// 			displayName: 'Sort Type',
+	// 			name: 'sortType',
+	// 			type: 'options',
+	// 			options: [
+	// 				{
+	// 					name: 'ASC',
+	// 					value: 'ASC',
+	// 				},
+	// 				{
+	// 					name: 'DESC',
+	// 					value: 'DESC',
+	// 				},
+	// 			],
+	// 			default: 'ASC',
+	// 		},
+	// 	],
+	// },
+	{
+		displayName: 'Sort',
+		name: 'sort',
+		type: 'fixedCollection',
+		typeOptions: {
+			multipleValues: true,
+		},
+		placeholder: 'Add Sort',
+		default: [
+			{
+				sort: {
+					name_field: '',
+					type_sort: 'ASC',
+				},
+			},
+		],
+		displayOptions: {
+			show: {
+				resource: ['user'],
+				operation: ['getList'],
 			},
 		},
 		options: [
 			{
-				displayName: 'From',
-				name: 'from',
-				type: 'dateTime',
-				default: '',
-				description:
-					'Start date and time (inclusive) for the meeting. Acceptable <a href="https://datatracker.ietf.org/doc/html/rfc2445"> format</a>.',
-			},
-			{
-				displayName: 'Host Email',
-				name: 'hostEmail',
-				type: 'string',
-				default: '',
-				description: 'Email address for the meeting host',
-			},
-			{
-				displayName: 'Integration Tag',
-				name: 'integrationTag',
-				type: 'string',
-				default: '',
-				description:
-					'External tag created by another application, e.g. Zendesk ticket ID or Jira ID',
-			},
-			{
-				displayName: 'Limit to Current Meetings',
-				name: 'current',
-				type: 'boolean',
-				default: true,
-				description: 'Whether to return just the current meeting or all meetings',
-			},
-			{
-				displayName: 'Meeting Number',
-				name: 'meetingNumber',
-				type: 'string',
-				default: '',
-				description: 'Meeting number for the meeting objects being requested',
-			},
-			{
-				displayName: 'Meeting Type',
-				name: 'meetingType',
-				type: 'options',
-				options: [
+				displayName: 'Sort',
+				name: 'sort',
+				values: [
 					{
-						name: 'Meeting Series',
-						value: 'meetingSeries',
-						description:
-							'Master of a scheduled series of meetings which consists of one or more scheduled meeting based on a recurrence rule',
+						displayName: 'Name Field',
+						name: 'name_field',
+						type: 'string',
+						default: '',
+						description: 'Field name to search',
 					},
 					{
-						name: 'Scheduled Meeting',
-						value: 'scheduledMeeting',
-						description: 'Instance from a master meeting series',
-					},
-					{
-						name: 'Meeting',
-						value: 'meeting',
-						description: 'Meeting instance that is actually happening or has happened',
+						displayName: 'Sort Type',
+						name: 'type_sort',
+						type: 'options',
+						options: [
+							{
+								name: 'ASC',
+								value: 'ASC',
+							},
+							{
+								name: 'DESC',
+								value: 'DESC',
+							},
+						],
+						default: 'ASC',
 					},
 				],
-				default: 'meetingSeries',
-			},
-			{
-				displayName: 'Participant Email',
-				name: 'participantEmail',
-				type: 'string',
-				default: '',
-				description: 'Email of a person that must be a meeting participant',
-			},
-			{
-				// eslint-disable-next-line n8n-nodes-base/node-param-display-name-wrong-for-dynamic-options
-				displayName: 'Site URL',
-				name: 'siteUrl',
-				type: 'options',
-				typeOptions: {
-					loadOptionsMethod: 'getSites',
-				},
-				default: '',
-				description:
-					'URL of the Webex site which the API lists meetings from. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
-			},
-			{
-				displayName: 'State',
-				name: 'state',
-				type: 'options',
-				options: [
-					{
-						name: 'Active',
-						value: 'active',
-					},
-					{
-						name: 'Ended',
-						value: 'ended',
-					},
-					{
-						name: 'Expired',
-						value: 'expired',
-					},
-					{
-						name: 'In Progress',
-						value: 'inProgress',
-					},
-					{
-						name: 'Lobby',
-						value: 'lobby',
-					},
-					{
-						name: 'Missed',
-						value: 'missed',
-					},
-					{
-						name: 'Ready',
-						value: 'ready',
-					},
-					{
-						name: 'Scheduled',
-						value: 'scheduled',
-					},
-				],
-				default: '',
-				description: 'Meeting state for the meeting objects being requested',
-			},
-			{
-				displayName: 'To',
-				name: 'to',
-				type: 'dateTime',
-				default: '',
-				description:
-					'End date and time (inclusive) for the meeting. Acceptable <a href="https://datatracker.ietf.org/doc/html/rfc2445"> format</a>.',
-			},
-			{
-				displayName: 'Weblink',
-				name: 'webLink',
-				type: 'string',
-				default: '',
-				description: 'URL encoded link to information page for the meeting objects being requested',
 			},
 		],
 	},
-
-	// ----------------------------------------
-	//             user: update
-	// ----------------------------------------
 	{
-		displayName: 'User ID',
-		name: 'userId',
-		type: 'string',
-		required: true,
-		default: '',
+		displayName: 'Search List',
+		name: 'search_list',
+		type: 'fixedCollection',
+		typeOptions: {
+			multipleValues: true, // Cho phép thêm nhiều item
+		},
+		placeholder: 'Add Search List',
+		default: [
+			{
+				search: {
+					name_field: '',
+					value_search: '',
+				},
+			},
+		],
 		displayOptions: {
 			show: {
 				resource: ['user'],
-				operation: ['update'],
+				operation: ['getList'],
 			},
 		},
-		description: 'ID of the user',
-	},
-	{
-		displayName: 'Update Fields',
-		name: 'updateFields',
-		type: 'collection',
-		displayOptions: {
-			show: {
-				resource: ['user'],
-				operation: ['update'],
-			},
-		},
-		default: {},
-		placeholder: 'Add Field',
 		options: [
 			{
-				displayName: 'Agenda',
-				name: 'agenda',
-				type: 'string',
-				default: '',
-				description: "The meeting's agenda. Cannot be longer that 1300 characters.",
-			},
-			{
-				displayName: 'Allow Any User To Be Co-Host',
-				name: 'allowAnyUserToBeCoHost',
-				type: 'boolean',
-				default: false,
-				description:
-					'Whether or not to allow any attendee with a host account on the target site to become a co-host when joining the meeting',
-			},
-			{
-				displayName: 'Allow Authenticated Devices',
-				name: 'allowAuthenticatedDevices',
-				type: 'boolean',
-				default: false,
-				description:
-					"Whether or not to allow authenticated video devices in the meeting's organization to start or join the meeting without a prompt",
-			},
-			{
-				displayName: 'Allow First User To Be Co-Host',
-				name: 'allowFirstUserToBeCoHost',
-				type: 'boolean',
-				default: false,
-				description:
-					'Whether or not to allow the first attendee of the meeting with a host account on the target site to become a co-host',
-			},
-			{
-				displayName: 'Enable Connect Audio Before Host',
-				name: 'enableConnectAudioBeforeHost',
-				type: 'boolean',
-				default: false,
-				description:
-					'Whether or not to allow any attendee to connect audio in the meeting before the host joins the meeting',
-			},
-			{
-				displayName: 'Enabled Auto Record Meeting',
-				name: 'enabledAutoRecordMeeting',
-				type: 'boolean',
-				default: false,
-				description: 'Whether or not meeting is recorded automatically',
-			},
-			{
-				displayName: 'Enabled Join Before Host',
-				name: 'enabledJoinBeforeHost',
-				type: 'boolean',
-				default: false,
-				description:
-					'Whether or not to allow any attendee to join the meeting before the host joins the meeting',
-			},
-			{
-				displayName: 'End',
-				name: 'end',
-				type: 'dateTime',
-				default: '',
-				description:
-					'Date and time for the end of the meeting. Acceptable <a href="https://datatracker.ietf.org/doc/html/rfc2445"> format</a>.',
-			},
-			{
-				displayName: 'Exclude Password',
-				name: 'excludePassword',
-
-				type: 'boolean',
-				default: false,
-				description: 'Whether or not to exclude password from the meeting email invitation',
-			},
-			{
-				displayName: 'Host Email',
-				name: 'hostEmail',
-				type: 'string',
-				default: '',
-				description:
-					'Email address for the meeting host. This attribute should only be set if the user or application calling the API has the admin-level scopes.',
-			},
-			{
-				displayName: 'Invitees',
-				name: 'inviteesUi',
-				type: 'fixedCollection',
-				typeOptions: {
-					multipleValues: true,
-				},
-				default: {},
-				placeholder: 'Add Invitee',
-				options: [
+				displayName: 'Search',
+				name: 'search',
+				values: [
 					{
-						displayName: 'Invitee',
-						name: 'inviteeValues',
-						values: [
-							{
-								displayName: 'Email',
-								name: 'email',
-								type: 'string',
-								placeholder: 'name@email.com',
-								required: true,
-								default: '',
-								description: 'Email address of meeting invitee',
-							},
-							{
-								displayName: 'Display Name',
-								name: 'displayName',
-								type: 'string',
-								default: '',
-								description: 'Display name of meeting invitee',
-							},
-							{
-								displayName: 'Co-Host',
-								name: 'coHost',
-								type: 'boolean',
-								default: false,
-								description: 'Whether or not invitee is allowed to be a co-host for the meeting',
-							},
-						],
+						displayName: 'Name Field',
+						name: 'name_field',
+						type: 'string',
+						default: '',
+						description: 'Field name to search',
+					},
+					{
+						displayName: 'Value Search',
+						name: 'value_search',
+						type: 'string',
+						default: '',
+						description: 'Value to search',
 					},
 				],
-			},
-			{
-				displayName: 'Join Before Host Minutes',
-				name: 'joinBeforeHostMinutes',
-				type: 'options',
-				options: [
-					{
-						name: '0',
-						value: 0,
-					},
-					{
-						name: '5',
-						value: 5,
-					},
-					{
-						name: '10',
-						value: 10,
-					},
-					{
-						name: '15',
-						value: 15,
-					},
-				],
-				default: 0,
-				description:
-					'The number of minutes an attendee can join the meeting before the meeting start time and the host joins',
-			},
-			{
-				displayName: 'Password',
-				name: 'password',
-				type: 'string',
-				typeOptions: { password: true },
-				default: '',
-				description:
-					"Meeting password. Must conform to the site's password complexity settings. If not specified, a random password conforming to the site's password rules will be generated automatically",
-			},
-			{
-				displayName: 'Public Meeting',
-				name: 'publicMeeting',
-				type: 'boolean',
-				default: false,
-				description: 'Whether or not to allow the meeting to be listed on the public calendar',
-			},
-			{
-				displayName: 'Recurrence',
-				name: 'recurrence',
-				type: 'string',
-				default: '',
-				description:
-					'Meeting series recurrence rule (conforming with RFC 2445), applying only to meeting series',
-			},
-			{
-				displayName: 'Required Registration Info',
-				name: 'requireRegistrationInfo',
-				type: 'multiOptions',
-				// eslint-disable-next-line n8n-nodes-base/node-param-multi-options-type-unsorted-items
-				options: [
-					{
-						name: 'Require First Name',
-						value: 'requireFirstName',
-					},
-					{
-						name: 'Require Last Name',
-						value: 'requireLastName',
-					},
-					{
-						name: 'Require Email',
-						value: 'requireEmail',
-					},
-					{
-						name: 'Require Job Title',
-						value: 'requireJobTitle',
-					},
-					{
-						name: 'Require Company Name',
-						value: 'requireCompanyName',
-					},
-					{
-						name: 'Require Address 1',
-						value: 'requireAddress1',
-					},
-					{
-						name: 'Require Address 2',
-						value: 'requireAddress2',
-					},
-					{
-						name: 'Require City',
-						value: 'requireCity',
-					},
-					{
-						name: 'Require State',
-						value: 'requireState',
-					},
-					{
-						name: 'Require Zip Code',
-						value: 'requireZipCode',
-					},
-					{
-						name: 'Require Country Region',
-						value: 'requireCountryRegion',
-					},
-					{
-						name: 'Require Work Phone',
-						value: 'requireWorkPhone',
-					},
-					{
-						name: 'Require Fax',
-						value: 'requireFax',
-					},
-				],
-				default: [],
-				description: 'Data required for meeting registration',
-			},
-			{
-				displayName: 'Reminder Time',
-				name: 'reminderTime',
-				type: 'number',
-				default: 1,
-				description:
-					'The number of minutes before the meeting begins, for sending an email reminder to the host',
-			},
-			{
-				displayName: 'Send Email',
-				name: 'sendEmail',
-				type: 'boolean',
-				default: false,
-				description:
-					'Whether or not to send emails to host and invitees. It is an optional field and default value is true.',
-			},
-			{
-				// eslint-disable-next-line n8n-nodes-base/node-param-display-name-wrong-for-dynamic-options
-				displayName: 'Site URL',
-				name: 'siteUrl',
-				type: 'options',
-				typeOptions: {
-					loadOptionsMethod: 'getSites',
-				},
-				default: '',
-				description:
-					'URL of the Webex site which the meeting is created on. If not specified, the meeting is created on user\'s preferred site. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
-			},
-			{
-				displayName: 'Start',
-				name: 'start',
-				type: 'dateTime',
-				default: '',
-				description:
-					'Date and time for the start of the meeting. Acceptable <a href="https://datatracker.ietf.org/doc/html/rfc2445"> format</a>.',
-			},
-			{
-				displayName: 'Title',
-				name: 'title',
-				type: 'string',
-				default: '',
-				description: 'Meeting title',
 			},
 		],
 	},
