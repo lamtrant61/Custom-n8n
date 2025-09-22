@@ -13,6 +13,9 @@ import { InstanceSettings } from 'n8n-core';
 import { jsonParse } from 'n8n-workflow';
 import { resolve } from 'path';
 
+import { AuthMiddleware } from '@/middlewares/custom-auth';
+import type { RequestHandler } from 'express';
+
 import { AbstractServer } from '@/abstract-server';
 import config from '@/config';
 import { ControllerRegistry } from '@/controller.registry';
@@ -230,6 +233,8 @@ export class Server extends AbstractServer {
 
 		// Parse cookies for easier access
 		this.app.use(cookieParser());
+		const authMiddleware = new AuthMiddleware();
+		this.app.use('/workflow', authMiddleware.authTenant as RequestHandler);
 
 		const { restEndpoint, app } = this;
 
