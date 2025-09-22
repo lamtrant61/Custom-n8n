@@ -37,7 +37,7 @@ export async function icApiRequest(
 			Accept: 'application/json',
 		},
 		// eslint-disable-next-line no-constant-binary-expression
-		url: `${uri}/${resource}/${path}` || `https://portal.basebs.net/konglab/${resource}`,
+		url: `${uri}/${resource}/${path}` || `https://portal.basebs.net/konglab/${resource}/${path}`,
 		json: true,
 		returnFullResponse: true,
 	};

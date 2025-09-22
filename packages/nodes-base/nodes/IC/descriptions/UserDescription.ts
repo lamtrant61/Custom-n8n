@@ -81,44 +81,6 @@ export const userFields: INodeProperties[] = [
 			},
 		},
 	},
-	// {
-	// 	displayName: 'Sort',
-	// 	name: 'sort',
-	// 	type: 'collection',
-	// 	placeholder: 'Add Sort',
-	// 	default: {},
-	// 	displayOptions: {
-	// 		show: {
-	// 			resource: ['user'],
-	// 			operation: ['getList'],
-	// 		},
-	// 	},
-	// 	options: [
-	// 		{
-	// 			displayName: 'Name Field',
-	// 			name: 'nameField',
-	// 			type: 'string',
-	// 			default: '',
-	// 			description: 'Field name to sort by',
-	// 		},
-	// 		{
-	// 			displayName: 'Sort Type',
-	// 			name: 'sortType',
-	// 			type: 'options',
-	// 			options: [
-	// 				{
-	// 					name: 'ASC',
-	// 					value: 'ASC',
-	// 				},
-	// 				{
-	// 					name: 'DESC',
-	// 					value: 'DESC',
-	// 				},
-	// 			],
-	// 			default: 'ASC',
-	// 		},
-	// 	],
-	// },
 	{
 		displayName: 'Sort',
 		name: 'sort',
