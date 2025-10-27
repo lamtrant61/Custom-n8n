@@ -1,5 +1,5 @@
 import * as workflowsApi from '@/api/workflows.ee';
-import { EnterpriseEditionFeature } from '@/constants';
+// import { EnterpriseEditionFeature } from '@/constants';
 import { STORES } from '@n8n/stores';
 import { useRootStore } from '@n8n/stores/useRootStore';
 import { useSettingsStore } from '@/stores/settings.store';
@@ -45,12 +45,17 @@ export const useWorkflowsEEStore = defineStore(STORES.WORKFLOWS_EE, () => {
 		sharedWithProjects: ProjectSharingData[];
 		workflowId: string;
 	}) => {
-		if (settingsStore.isEnterpriseFeatureEnabled[EnterpriseEditionFeature.Sharing]) {
-			await workflowsApi.setWorkflowSharedWith(rootStore.restApiContext, payload.workflowId, {
-				shareWithIds: payload.sharedWithProjects.map((p) => p.id),
-			});
-			setWorkflowSharedWith(payload);
-		}
+		await workflowsApi.setWorkflowSharedWith(rootStore.restApiContext, payload.workflowId, {
+			shareWithIds: payload.sharedWithProjects.map((p) => p.id),
+		});
+		setWorkflowSharedWith(payload);
+
+		// if (settingsStore.isEnterpriseFeatureEnabled[EnterpriseEditionFeature.Sharing]) {
+		// 	await workflowsApi.setWorkflowSharedWith(rootStore.restApiContext, payload.workflowId, {
+		// 		shareWithIds: payload.sharedWithProjects.map((p) => p.id),
+		// 	});
+		// 	setWorkflowSharedWith(payload);
+		// }
 	};
 
 	return {

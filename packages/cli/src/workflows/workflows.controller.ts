@@ -476,7 +476,7 @@ export class WorkflowsController {
 		);
 	}
 
-	@Licensed('feat:sharing')
+	// @Licensed('feat:sharing')
 	@Put('/:workflowId/share')
 	@ProjectScope('workflow:share')
 	async share(req: WorkflowRequest.Share) {
