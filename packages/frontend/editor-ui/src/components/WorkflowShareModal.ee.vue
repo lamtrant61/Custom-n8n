@@ -67,9 +67,10 @@ const sharedWithProjects = ref([
 ] as ProjectSharingData[]);
 const teamProject = ref(null as Project | null);
 
-const isSharingEnabled = computed(
-	() => settingsStore.isEnterpriseFeatureEnabled[EnterpriseEditionFeature.Sharing],
-);
+// const isSharingEnabled = computed(
+// 	() => settingsStore.isEnterpriseFeatureEnabled[EnterpriseEditionFeature.Sharing],
+// );
+const isSharingEnabled = computed(() => true);
 
 const isHomeTeamProject = computed(() => workflow.value.homeProject?.type === ProjectTypes.Team);
 

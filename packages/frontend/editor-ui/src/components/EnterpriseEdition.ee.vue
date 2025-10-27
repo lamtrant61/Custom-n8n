@@ -14,12 +14,16 @@ const props = withDefaults(
 
 const settingsStore = useSettingsStore();
 
-const canAccess = computed(() =>
-	props.features.reduce(
+const canAccess = computed(() => {
+	let canAccess = props.features.reduce(
 		(acc: boolean, feature) => acc && !!settingsStore.isEnterpriseFeatureEnabled[feature],
 		true,
-	),
-);
+	);
+	if (props.features.length === 1 && props.features[0] === 'sharing' && !canAccess) {
+		canAccess = true;
+	}
+	return canAccess;
+});
 </script>
 
 <template>
