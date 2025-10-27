@@ -3,7 +3,7 @@ import type { AllRolesMap, PermissionsRecord } from '@n8n/permissions';
 import ProjectSharing from '@/components/Projects/ProjectSharing.vue';
 import { useI18n } from '@n8n/i18n';
 import { usePageRedirectionHelper } from '@/composables/usePageRedirectionHelper';
-import { EnterpriseEditionFeature } from '@/constants';
+// import { EnterpriseEditionFeature } from '@/constants';
 import type { ICredentialsDecryptedResponse, ICredentialsResponse } from '@/Interface';
 import { useProjectsStore } from '@/stores/projects.store';
 import { useRolesStore } from '@/stores/roles.store';
@@ -43,9 +43,11 @@ const pageRedirectionHelper = usePageRedirectionHelper();
 
 const sharedWithProjects = ref([...(props.credential?.sharedWithProjects ?? [])]);
 
-const isSharingEnabled = computed(
-	() => settingsStore.isEnterpriseFeatureEnabled[EnterpriseEditionFeature.Sharing],
-);
+// const isSharingEnabled = computed(
+// 	() => settingsStore.isEnterpriseFeatureEnabled[EnterpriseEditionFeature.Sharing],
+// );
+const isSharingEnabled = computed(() => true); // TEMPORARY OVERRIDE LISCENSE
+
 const credentialOwnerName = computed(() => {
 	const { name, email } = splitName(props.credential?.homeProject?.name ?? '');
 	return name ?? email ?? '';
