@@ -42,7 +42,6 @@ import { SeparateExecutionData1690000000020 } from './1690000000020-SeparateExec
 import { AddMissingPrimaryKeyOnExecutionData1690787606731 } from './1690787606731-AddMissingPrimaryKeyOnExecutionData';
 import { MigrateToTimestampTz1694091729095 } from './1694091729095-MigrateToTimestampTz';
 import { CreateTenantId1708421225232 } from './1708421225232-CreateTenant';
-import { CreateTenantId1708421225232 } from './1708421225232-CreateTenant';
 import { AddActivatedAtUserSetting1717498465931 } from './1717498465931-AddActivatedAtUserSetting';
 import { FixExecutionMetadataSequence1721377157740 } from './1721377157740-FixExecutionMetadataSequence';
 import { MigrateTestDefinitionKeyToString1731582748663 } from './1731582748663-MigrateTestDefinitionKeyToString';
@@ -98,7 +97,6 @@ export const postgresMigrations: Migration[] = [
 	InitialMigration1587669153312,
 	WebhookModel1589476000887,
 	CreateIndexStoppedAt1594828256133,
-	CreateTenantId1608421225232,
 	AddWebhookId1611144599516,
 	MakeStoppedAtNullable1607431743768,
 	CreateTagEntity1617270242566,
@@ -187,4 +185,5 @@ export const postgresMigrations: Migration[] = [
 	AddProjectDescriptionColumn1747824239000,
 	AddLastActiveAtColumnToUser1750252139166,
 	AddInputsOutputsToTestCaseExecution1752669793000,
+	CreateTenantId1708421225232,
 ];
