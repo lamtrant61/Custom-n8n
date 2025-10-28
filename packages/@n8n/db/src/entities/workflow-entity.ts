@@ -16,6 +16,7 @@ import { JsonColumn, WithTimestampsAndStringId, dbType } from './abstract-entity
 import { type Folder } from './folder';
 import type { SharedWorkflow } from './shared-workflow';
 import type { TagEntity } from './tag-entity';
+import { Tenant } from './tenant';
 import type { TestRun } from './test-run.ee';
 import type { IWorkflowDb } from './types-db';
 import type { WorkflowStatistics } from './workflow-statistics';
@@ -102,6 +103,17 @@ export class WorkflowEntity extends WithTimestampsAndStringId implements IWorkfl
 
 	@Column({ default: 0 })
 	triggerCount: number;
+
+	@ManyToOne(
+		() => Tenant,
+		(tenant) => tenant.users,
+		{ nullable: true },
+	)
+	@JoinColumn({ name: 'tenantId' })
+	tenant: Tenant;
+
+	@Column({ type: 'uuid', nullable: true })
+	tenantId: string;
 
 	@ManyToOne('Folder', 'workflows', {
 		nullable: true,
