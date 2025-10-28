@@ -102,6 +102,7 @@ export class WorkflowsController {
 		Object.assign(newWorkflow, req.body);
 
 		newWorkflow.versionId = uuid();
+		if (req.user.tenantId) newWorkflow.tenantId = req.user.tenantId;
 
 		await validateEntity(newWorkflow);
 
