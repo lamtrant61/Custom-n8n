@@ -275,7 +275,8 @@ export class UserService {
 			payloadCreateUser.lastName = null;
 		}
 		if (payloadCreateUser.tenantRole === '1') {
-			payloadCreateUser.role = 'global:admin';
+			// payloadCreateUser.role = 'global:admin';
+			payloadCreateUser.role = 'global:member'; // Sửa tất cả thành role thường
 		} else if (payloadCreateUser.tenantRole === '2') {
 			payloadCreateUser.role = 'global:member';
 		}
