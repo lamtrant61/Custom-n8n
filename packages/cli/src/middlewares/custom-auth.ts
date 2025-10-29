@@ -16,6 +16,10 @@ declare global {
 interface AuthJwtPayload {
 	/** User Id */
 	id: string;
+	/** Tenant Id */
+	tenantId: string;
+	/** Role */
+	role: string;
 	/** This hash is derived from email and bcrypt of password */
 	hash: string;
 	/** This is a client generated unique string to prevent session hijacking */
