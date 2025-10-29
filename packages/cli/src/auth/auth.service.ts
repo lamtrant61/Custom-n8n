@@ -21,6 +21,10 @@ import { UrlService } from '@/services/url.service';
 interface AuthJwtPayload {
 	/** User Id */
 	id: string;
+	/** Tenant Id */
+	tenantId: string;
+	/** Role */
+	role: string;
 	/** This hash is derived from email and bcrypt of password */
 	hash: string;
 	/** This is a client generated unique string to prevent session hijacking */
@@ -151,8 +155,15 @@ export class AuthService {
 	}
 
 	issueJWT(user: User, usedMfa: boolean = false, browserId?: string) {
+		let role = 'User';
+		// eslint-disable-next-line eqeqeq
+		if (user.tenantRole == 0) role = 'Root';
+		// eslint-disable-next-line eqeqeq
+		else if (user.tenantRole == 1) role = 'Tenant Admin';
 		const payload: AuthJwtPayload = {
 			id: user.id,
+			tenantId: user.tenantId,
+			role,
 			hash: this.createJWTHash(user),
 			browserId: browserId && this.hash(browserId),
 			usedMfa,
