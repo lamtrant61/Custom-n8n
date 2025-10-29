@@ -97,6 +97,12 @@ export class WorkflowService {
 			});
 		}
 
+		const tenantWorkflow = await this.getShareWorkflowAdminTenant(user);
+		if (tenantWorkflow.length > 0) {
+			sharedWorkflowIds.push(...tenantWorkflow);
+		}
+		sharedWorkflowIds = [...new Set(sharedWorkflowIds)];
+
 		if (includeFolders) {
 			[workflowsAndFolders, count] = await this.workflowRepository.getWorkflowsAndFoldersWithCount(
 				sharedWorkflowIds,
@@ -136,6 +142,20 @@ export class WorkflowService {
 			workflows,
 			count,
 		};
+	}
+
+	private async getShareWorkflowAdminTenant(user: User) {
+		// eslint-disable-next-line eqeqeq
+		if (user.tenantRole == 1) {
+			const sharedWorkflows = await this.workflowRepository.find({
+				select: ['id'],
+				where: {
+					tenantId: user.tenantId,
+				},
+			});
+			return sharedWorkflows.map(({ id }) => id);
+		}
+		return [];
 	}
 
 	private async processSharedWorkflows(
