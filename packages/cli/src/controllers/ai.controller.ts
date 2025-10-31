@@ -27,6 +27,10 @@ import { UserService } from '@/services/user.service';
 
 export type FlushableResponse = Response & { flush: () => void };
 
+type CreateCredentialDtoWithTenant = CreateCredentialDto & {
+	tenantId: string | null;
+};
+
 @RestController('/ai')
 export class AiController {
 	constructor(
@@ -190,9 +194,9 @@ export class AiController {
 				},
 				projectId: payload?.projectId,
 			};
-
+			(credentialProperties as any).tenantId = req.user.tenantId;
 			const newCredential = await this.credentialsService.createManagedCredential(
-				credentialProperties,
+				credentialProperties as CreateCredentialDtoWithTenant,
 				req.user,
 			);
 

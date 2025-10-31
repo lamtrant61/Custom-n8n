@@ -46,6 +46,9 @@ import { CredentialsFinderService } from './credentials-finder.service';
 import { CredentialsService } from './credentials.service';
 import { EnterpriseCredentialsService } from './credentials.service.ee';
 
+type CreateCredentialDtoWithTenant = CreateCredentialDto & {
+	tenantId: string | null;
+};
 @RestController('/credentials')
 export class CredentialsController {
 	constructor(
@@ -176,8 +179,13 @@ export class CredentialsController {
 		_: Response,
 		@Body payload: CreateCredentialDto,
 	) {
+		const payloadTenant: CreateCredentialDtoWithTenant = {
+			...payload,
+			tenantId: req.user.tenantId || null,
+		};
+
 		const newCredential = await this.credentialsService.createUnmanagedCredential(
-			payload,
+			payloadTenant,
 			req.user,
 		);
 
@@ -238,6 +246,7 @@ export class CredentialsController {
 			name: preparedCredentialData.name,
 			type: preparedCredentialData.type,
 			data: preparedCredentialData.data as unknown as ICredentialDataDecryptedObject,
+			tenantId: null,
 		});
 
 		const responseData = await this.credentialsService.update(credentialId, newCredentialData);
