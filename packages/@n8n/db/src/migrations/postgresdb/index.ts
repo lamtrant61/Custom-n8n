@@ -43,6 +43,7 @@ import { MigrateToTimestampTz1694091729095 } from './1694091729095-MigrateToTime
 import { CreateTenantId1708421225232 } from './1708421225232-CreateTenant';
 import { AddTenantAtWorkflow1715211125131 } from './1715211125131-AddTenantAtWorkflow';
 import { AddActivatedAtUserSetting1717498465931 } from './1717498465931-AddActivatedAtUserSetting';
+import { AddTenantAtCredential1721131521212 } from './1721131521212-AddTenantAtCredential';
 import { FixExecutionMetadataSequence1721377157740 } from './1721377157740-FixExecutionMetadataSequence';
 import { MigrateTestDefinitionKeyToString1731582748663 } from './1731582748663-MigrateTestDefinitionKeyToString';
 import { UpdateParentFolderIdColumn1740445074052 } from './1740445074052-UpdateParentFolderIdColumn';
@@ -187,4 +188,5 @@ export const postgresMigrations: Migration[] = [
 	AddInputsOutputsToTestCaseExecution1752669793000,
 	CreateTenantId1708421225232,
 	AddTenantAtWorkflow1715211125131,
+	AddTenantAtCredential1721131521212,
 ];

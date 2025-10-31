@@ -1,8 +1,9 @@
-import { Column, Entity, Index, OneToMany } from '@n8n/typeorm';
+import { Column, Entity, Index, OneToMany, ManyToOne, JoinColumn } from '@n8n/typeorm';
 import { IsObject, IsString, Length } from 'class-validator';
 
 import { WithTimestampsAndStringId } from './abstract-entity';
 import type { SharedCredentials } from './shared-credentials';
+import { Tenant } from './tenant';
 import type { ICredentialsDb } from './types-db';
 
 @Entity()
@@ -40,4 +41,15 @@ export class CredentialsEntity extends WithTimestampsAndStringId implements ICre
 		const { shared, ...rest } = this;
 		return rest;
 	}
+
+	@ManyToOne(
+		() => Tenant,
+		(tenant) => tenant.users,
+		{ nullable: true },
+	)
+	@JoinColumn({ name: 'tenantId' })
+	tenant: Tenant;
+
+	@Column({ type: 'uuid', nullable: true })
+	tenantId: string;
 }
