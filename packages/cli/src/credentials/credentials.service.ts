@@ -1,3 +1,4 @@
+/* eslint-disable complexity */
 import type { CreateCredentialDto } from '@n8n/api-types';
 import { Logger } from '@n8n/backend-common';
 import type { Project, User, ICredentialsDb, ScopesField } from '@n8n/db';
@@ -48,7 +49,11 @@ export type CredentialsGetSharedOptions =
 	| { allowGlobalScope: true; globalScope: Scope }
 	| { allowGlobalScope: false };
 
-type CreateCredentialOptions = CreateCredentialDto & {
+type CreateCredentialDtoWithTenant = CreateCredentialDto & {
+	tenantId: string | null;
+};
+
+type CreateCredentialOptions = CreateCredentialDtoWithTenant & {
 	isManaged: boolean;
 };
 
@@ -170,9 +175,17 @@ export class CredentialsService {
 			return credentials;
 		}
 
-		const ids = await this.credentialsFinderService.getCredentialIdsByUserAndRole([user.id], {
+		let ids = await this.credentialsFinderService.getCredentialIdsByUserAndRole([user.id], {
 			scopes: ['credential:read'],
 		});
+		// eslint-disable-next-line eqeqeq
+		if (user.tenantRole == 1) {
+			const tenantCredential = await this.getShareCredentialAdminTenant(user);
+			if (tenantCredential.length > 0) {
+				ids.push(...tenantCredential);
+				ids = [...new Set(ids)];
+			}
+		}
 
 		let credentials = await this.credentialsRepository.findMany(
 			listQueryOptions,
@@ -215,6 +228,20 @@ export class CredentialsService {
 		}
 
 		return credentials;
+	}
+
+	private async getShareCredentialAdminTenant(user: User) {
+		// eslint-disable-next-line eqeqeq
+		if (user.tenantRole == 1) {
+			const sharedCredentials = await this.credentialsRepository.find({
+				select: ['id'],
+				where: {
+					tenantId: user.tenantId,
+				},
+			});
+			return sharedCredentials.map(({ id }) => id);
+		}
+		return [];
 	}
 
 	/**
@@ -341,6 +368,7 @@ export class CredentialsService {
 		id: string | null;
 		name: string;
 		type: string;
+		tenantId: string | null;
 		data: ICredentialDataDecryptedObject;
 	}): ICredentialsDb {
 		const credentials = new Credentials(
@@ -352,6 +380,7 @@ export class CredentialsService {
 
 		const newCredentialData = credentials.getDataToSave() as ICredentialsDb;
 
+		if (credential.tenantId) (newCredentialData as any).tenantId = credential.tenantId;
 		// Add special database related data
 		newCredentialData.updatedAt = new Date();
 
@@ -702,7 +731,7 @@ export class CredentialsService {
 	 * Create a new credential in user's account and return it along the scopes
 	 * If a projectId is send, then it also binds the credential to that specific project
 	 */
-	async createUnmanagedCredential(dto: CreateCredentialDto, user: User) {
+	async createUnmanagedCredential(dto: CreateCredentialDtoWithTenant, user: User) {
 		return await this.createCredential({ ...dto, isManaged: false }, user);
 	}
 
@@ -710,7 +739,7 @@ export class CredentialsService {
 	 * Create a new managed credential in user's account and return it along the scopes.
 	 * Managed credentials are managed by n8n and cannot be edited by the user.
 	 */
-	async createManagedCredential(dto: CreateCredentialDto, user: User) {
+	async createManagedCredential(dto: CreateCredentialDtoWithTenant, user: User) {
 		return await this.createCredential({ ...dto, isManaged: true }, user);
 	}
 
@@ -719,6 +748,7 @@ export class CredentialsService {
 			id: null,
 			name: opts.name,
 			type: opts.type,
+			tenantId: opts.tenantId,
 			data: opts.data as ICredentialDataDecryptedObject,
 		});
 
