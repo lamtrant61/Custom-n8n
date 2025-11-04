@@ -48,8 +48,14 @@ export class CredentialsFinderService {
 	/** Get a credential if it has been shared with a user */
 	async findCredentialForUser(credentialsId: string, user: User, scopes: Scope[]) {
 		let where: FindOptionsWhere<SharedCredentials> = { credentialsId };
-
-		if (!hasGlobalScope(user, scopes, { mode: 'allOf' })) {
+		const credentialInfo = await this.credentialsRepository.findOne({
+			where: { id: credentialsId },
+		});
+		if (!credentialInfo) return null;
+		// eslint-disable-next-line eqeqeq
+		if (user.tenantRole == 1 && credentialInfo.tenantId === user.tenantId) {
+			// skip where condition
+		} else if (!hasGlobalScope(user, scopes, { mode: 'allOf' })) {
 			const projectRoles = rolesWithScope('project', scopes);
 			const credentialRoles = rolesWithScope('credential', scopes);
 			where = {
