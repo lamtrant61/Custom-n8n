@@ -4,6 +4,7 @@ import {
 	SharedCredentialsRepository,
 	CredentialsRepository,
 	SharedWorkflowRepository,
+	WorkflowRepository,
 } from '@n8n/db';
 import { Container } from '@n8n/di';
 import { hasGlobalScope, rolesWithScope, type Scope } from '@n8n/permissions';
@@ -87,6 +88,16 @@ export async function userHasScopes(
 
 		if (!workflows.length) {
 			throw new NotFoundError(`Workflow with ID "${workflowId}" not found.`);
+		}
+		// eslint-disable-next-line eqeqeq
+		if (user.tenantRole == 1) {
+			const tenantWorkflows = await Container.get(WorkflowRepository).findBy({
+				id: workflowId,
+			});
+			if (tenantWorkflows.length && tenantWorkflows[0].tenantId === user.tenantId) {
+				(user as any).adminCheckWorkflow = true;
+				return true;
+			}
 		}
 
 		return workflows.some(
