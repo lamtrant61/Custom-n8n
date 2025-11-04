@@ -178,10 +178,12 @@ export class CredentialsService {
 		let ids = await this.credentialsFinderService.getCredentialIdsByUserAndRole([user.id], {
 			scopes: ['credential:read'],
 		});
+		const tenant_ids: string[] = [];
 		// eslint-disable-next-line eqeqeq
 		if (user.tenantRole == 1) {
 			const tenantCredential = await this.getShareCredentialAdminTenant(user);
-			if (tenantCredential.length > 0) {
+			if (tenantCredential.length) {
+				tenant_ids.push(...tenantCredential);
 				ids.push(...tenantCredential);
 				ids = [...new Set(ids)];
 			}
@@ -227,6 +229,19 @@ export class CredentialsService {
 			});
 		}
 
+		if (tenant_ids.length) {
+			credentials.forEach((cred) => {
+				if (tenant_ids.includes(cred.id)) {
+					(cred as any).scopes = [
+						'credential:delete',
+						'credential:move',
+						'credential:read',
+						'credential:share',
+						'credential:update',
+					];
+				}
+			});
+		}
 		return credentials;
 	}
 
@@ -321,7 +336,9 @@ export class CredentialsService {
 	): Promise<SharedCredentials | null> {
 		let where: FindOptionsWhere<SharedCredentials> = { credentialsId: credentialId };
 
-		if (!hasGlobalScope(user, globalScopes, { mode: 'allOf' })) {
+		if ((user as any).adminCheckCredential) {
+			// skip condition 2
+		} else if (!hasGlobalScope(user, globalScopes, { mode: 'allOf' })) {
 			where = {
 				...where,
 				role: 'credential:owner',
