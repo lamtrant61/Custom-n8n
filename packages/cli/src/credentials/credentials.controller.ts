@@ -277,8 +277,19 @@ export class CredentialsController {
 			credentialId: credential.id,
 		});
 
-		const scopes = await this.credentialsService.getCredentialScopes(req.user, credential.id);
-
+		let scopes = await this.credentialsService.getCredentialScopes(req.user, credential.id);
+		// eslint-disable-next-line eqeqeq
+		if (user.tenantRole == 1) {
+			if (credential.tenantId === user.tenantId) {
+				scopes = [
+					'credential:delete',
+					'credential:move',
+					'credential:read',
+					'credential:share',
+					'credential:update',
+				];
+			}
+		}
 		return { ...rest, scopes };
 	}
 
