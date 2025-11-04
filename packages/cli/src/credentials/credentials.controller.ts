@@ -12,10 +12,10 @@ import {
 	SharedCredentialsRepository,
 	AuthenticatedRequest,
 } from '@n8n/db';
+// Licensed,
 import {
 	Delete,
 	Get,
-	Licensed,
 	Patch,
 	Post,
 	Put,
@@ -126,11 +126,22 @@ export class CredentialsController {
 				)
 			: await this.credentialsService.getOne(req.user, credentialId, query.includeData);
 
-		const scopes = await this.credentialsService.getCredentialScopes(
+		let scopes = await this.credentialsService.getCredentialScopes(
 			req.user,
 			req.params.credentialId,
 		);
-
+		// eslint-disable-next-line eqeqeq
+		if (req.user.tenantRole == 1) {
+			if (credential.tenantId === req.user.tenantId) {
+				scopes = [
+					'credential:delete',
+					'credential:move',
+					'credential:read',
+					'credential:share',
+					'credential:update',
+				];
+			}
+		}
 		return { ...credential, scopes };
 	}
 

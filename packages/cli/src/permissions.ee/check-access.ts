@@ -1,5 +1,10 @@
 import type { User } from '@n8n/db';
-import { ProjectRepository, SharedCredentialsRepository, SharedWorkflowRepository } from '@n8n/db';
+import {
+	ProjectRepository,
+	SharedCredentialsRepository,
+	CredentialsRepository,
+	SharedWorkflowRepository,
+} from '@n8n/db';
 import { Container } from '@n8n/di';
 import { hasGlobalScope, rolesWithScope, type Scope } from '@n8n/permissions';
 // eslint-disable-next-line n8n-local-rules/misplaced-n8n-typeorm-import
@@ -56,6 +61,16 @@ export async function userHasScopes(
 		});
 		if (!credentials.length) {
 			throw new NotFoundError(`Credential with ID "${credentialId}" not found.`);
+		}
+		// eslint-disable-next-line eqeqeq
+		if (user.tenantRole == 1) {
+			const tenantCredentials = await Container.get(CredentialsRepository).findBy({
+				id: credentialId,
+			});
+			if (tenantCredentials.length && tenantCredentials[0].tenantId === user.tenantId) {
+				(user as any).adminCheckCredential = true;
+				return true;
+			}
 		}
 
 		return credentials.some(
