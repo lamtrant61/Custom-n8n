@@ -17,11 +17,11 @@ import {
 	WorkflowRepository,
 	AuthenticatedRequest,
 } from '@n8n/db';
+// Licensed,
 import {
 	Body,
 	Delete,
 	Get,
-	Licensed,
 	Param,
 	Patch,
 	Post,

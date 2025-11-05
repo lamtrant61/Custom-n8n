@@ -1,5 +1,5 @@
 import type { SharedWorkflow, User } from '@n8n/db';
-import { SharedWorkflowRepository, FolderRepository } from '@n8n/db';
+import { SharedWorkflowRepository, WorkflowRepository, FolderRepository } from '@n8n/db';
 import { Service } from '@n8n/di';
 import { hasGlobalScope, rolesWithScope, type Scope } from '@n8n/permissions';
 // eslint-disable-next-line n8n-local-rules/misplaced-n8n-typeorm-import
@@ -12,6 +12,7 @@ export class WorkflowFinderService {
 	constructor(
 		private readonly sharedWorkflowRepository: SharedWorkflowRepository,
 		private readonly folderRepository: FolderRepository,
+		private readonly workflowRepository: WorkflowRepository,
 	) {}
 
 	async findWorkflowForUser(
@@ -39,6 +40,15 @@ export class WorkflowFinderService {
 					},
 				},
 			};
+		}
+		// eslint-disable-next-line eqeqeq
+		if (user.tenantRole == 1) {
+			const workflowInfo = await this.workflowRepository.findOneBy({ id: workflowId });
+			if (workflowInfo) {
+				if (workflowInfo.tenantId === user.tenantId) {
+					where = {};
+				}
+			}
 		}
 
 		const sharedWorkflow = await this.sharedWorkflowRepository.findWorkflowWithOptions(workflowId, {
