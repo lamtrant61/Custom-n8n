@@ -56,6 +56,7 @@ export class TenantRepository extends Repository<Tenant> {
 			name?: string;
 			status?: boolean;
 			subdomain?: string;
+			isDeleted?: boolean;
 		},
 		take?: number,
 		skip?: number,
@@ -73,6 +74,9 @@ export class TenantRepository extends Repository<Tenant> {
 
 		if (filter?.status !== undefined) {
 			qb.andWhere('tenant.status = :status', { status: filter.status });
+		}
+		if (filter?.isDeleted !== undefined) {
+			qb.andWhere('tenant.isDeleted = :isDeleted', { isDeleted: filter.isDeleted });
 		}
 
 		// if (filter?.subdomain) {

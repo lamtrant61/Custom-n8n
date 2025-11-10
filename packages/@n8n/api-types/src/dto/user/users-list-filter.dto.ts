@@ -38,6 +38,7 @@ const userFilterSchema = z.object({
 	firstName: z.string().optional(),
 	lastName: z.string().optional(),
 	tenantId: z.string().optional(),
+	isDeleted: z.boolean().optional(),
 	email: z.string().optional(),
 	mfaEnabled: z.boolean().optional(),
 	fullText: z.string().optional(), // Full text search across firstName, lastName, and email
