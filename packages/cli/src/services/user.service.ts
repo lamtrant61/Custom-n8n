@@ -264,7 +264,8 @@ export class UserService {
 		});
 	}
 
-	async createUser(payload: UserCreateRequestDto, role: number = 2, userTenantId?: string) {
+	// async createUser(payload: UserCreateRequestDto, role: number = 2, userTenantId?: string) {
+	async createUser(payload: UserCreateRequestDto, userInfo: any) {
 		const payloadCreateUser = {
 			...payload,
 		} as any;
@@ -280,10 +281,16 @@ export class UserService {
 		} else if (payloadCreateUser.tenantRole === '2') {
 			payloadCreateUser.role = 'global:member';
 		}
-		if (role === 1) {
-			if (userTenantId && payloadCreateUser.tenantId !== userTenantId) {
+		if (userInfo.role === 'global:owner') {
+			// Owner có thể tạo user bất kỳ tenant nào
+			// Skip condition
+			// eslint-disable-next-line eqeqeq
+		} else if (userInfo.tenantRole == 1) {
+			if (userInfo.tenantId && payloadCreateUser.tenantId !== userInfo.tenantId) {
 				throw new ForbiddenError('You do not have permission to create users in this tenant');
 			}
+		} else {
+			throw new ForbiddenError('You do not have permission to create users');
 		}
 		const password = generatePassword();
 		payloadCreateUser.password = await this.passwordUtility.hash(password);
