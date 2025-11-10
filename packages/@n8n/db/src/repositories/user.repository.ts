@@ -209,6 +209,12 @@ export class UserRepository extends Repository<User> {
 			}
 		}
 
+		if (filter?.tenantId) {
+			queryBuilder.andWhere('user.tenantId = :tenantId', {
+				tenantId: filter.tenantId,
+			});
+		}
+
 		if (role === 1 || role === 2) {
 			queryBuilder.andWhere('user.tenantId = :tenantId', {
 				tenantId,

@@ -106,11 +106,22 @@ export class UsersController {
 		_res: Response,
 		@Query listQueryOptions: UsersListFilterDto,
 	) {
+		// eslint-disable-next-line eqeqeq
+		if (req.user_info.tenantRole == 2 && req.user_info.role !== 'global:owner') {
+			throw new ForbiddenError('You do not have permission to list users in this tenant');
+		}
 		if (listQueryOptions.limit) {
 			listQueryOptions.take = parseInt(listQueryOptions.limit) || 10;
 		}
 		if (listQueryOptions.page) {
 			listQueryOptions.skip = (parseInt(listQueryOptions.page) - 1) * listQueryOptions.take || 0;
+		}
+		// eslint-disable-next-line eqeqeq
+		if (req.user_info.tenantRole == 1) {
+			listQueryOptions.filter = {
+				...listQueryOptions.filter,
+				tenantId: req.user_info.tenantId,
+			};
 		}
 		const userQuery = this.userRepository.buildUserQuery(
 			listQueryOptions,

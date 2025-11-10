@@ -264,7 +264,6 @@ export class UserService {
 		});
 	}
 
-	// async createUser(payload: UserCreateRequestDto, role: number = 2, userTenantId?: string) {
 	async createUser(payload: UserCreateRequestDto, userInfo: any) {
 		const payloadCreateUser = {
 			...payload,

@@ -37,6 +37,7 @@ const userFilterSchema = z.object({
 	isOwner: z.boolean().optional(),
 	firstName: z.string().optional(),
 	lastName: z.string().optional(),
+	tenantId: z.string().optional(),
 	email: z.string().optional(),
 	mfaEnabled: z.boolean().optional(),
 	fullText: z.string().optional(), // Full text search across firstName, lastName, and email
@@ -74,6 +75,7 @@ const userExpandSchema = z.array(z.enum(['projectRelations']));
 export class UsersListFilterDto extends Z.class({
 	...paginationSchema,
 	take: createTakeValidator(50, true), // Limit to 50 items per page, and allow infinity for pagination
+	tenantId: z.string().optional(),
 	select: userSelectSchema.optional(),
 	filter: filterValidatorSchema.optional(),
 	expand: userExpandSchema.optional(),
