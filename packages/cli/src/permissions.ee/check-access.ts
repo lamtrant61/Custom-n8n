@@ -40,6 +40,10 @@ export async function userHasScopes(
 		if (scopes[0].startsWith('user:') && user.tenantRole == 1) {
 			return true;
 		}
+		// eslint-disable-next-line eqeqeq
+		if (scopes[0] === 'tenant:update' && user.tenantRole == 1) {
+			return true;
+		}
 	}
 
 	if (globalOnly) return false;
