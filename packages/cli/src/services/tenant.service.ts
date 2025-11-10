@@ -27,7 +27,7 @@ export class TenantService {
 	/** Lấy tenant theo ID */
 	async findById(id: string) {
 		const tenant = await this.tenantRepository.findOneById(id);
-		this.logger.info('Finding tenant by ID', { id, tenant });
+		// this.logger.info('Finding tenant by ID', { id, tenant });
 		return tenant;
 	}
 

@@ -185,11 +185,7 @@ export class UsersController {
 		if (!checkTenant) {
 			throw new NotFoundError(`Tenant with ID "${tenantId}" not found`);
 		}
-		return await this.userService.createUser(
-			payload,
-			parseInt(String(_req.user_info.tenantRole)),
-			_req.user.tenantId,
-		);
+		return await this.userService.createUser(payload, _req.user_info);
 	}
 
 	@Patch('/:id/settings')

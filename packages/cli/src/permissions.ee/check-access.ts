@@ -34,6 +34,14 @@ export async function userHasScopes(
 ): Promise<boolean> {
 	if (hasGlobalScope(user, scopes, { mode: 'allOf' })) return true;
 
+	// Đoạn này cho phép tenant admin pass qua scope user
+	if (scopes.length) {
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-call, eqeqeq
+		if (scopes[0].startsWith('user:') && user.tenantRole == 1) {
+			return true;
+		}
+	}
+
 	if (globalOnly) return false;
 
 	// Find which project roles are defined to contain the required scopes.
