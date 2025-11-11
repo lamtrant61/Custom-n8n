@@ -346,7 +346,17 @@ export class WorkflowsController {
 			);
 		}
 
-		const scopes = await this.workflowService.getWorkflowScopes(req.user, workflowId);
+		let scopes = await this.workflowService.getWorkflowScopes(req.user, workflowId);
+		if (req.user.tenantRole == 1 && req.user.tenantId === workflow.tenantId) {
+			scopes = [
+				'workflow:delete',
+				'workflow:execute',
+				'workflow:share',
+				'workflow:move',
+				'workflow:update',
+				'workflow:read',
+			];
+		}
 
 		return { ...workflow, scopes };
 	}
