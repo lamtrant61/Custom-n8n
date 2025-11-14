@@ -347,6 +347,7 @@ export class WorkflowsController {
 		}
 
 		let scopes = await this.workflowService.getWorkflowScopes(req.user, workflowId);
+		// eslint-disable-next-line eqeqeq
 		if (req.user.tenantRole == 1 && req.user.tenantId === workflow.tenantId) {
 			scopes = [
 				'workflow:delete',

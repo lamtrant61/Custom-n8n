@@ -138,6 +138,20 @@ export class WorkflowService {
 			workflows = this.mergeProcessedWorkflows(workflowsAndFolders, workflows);
 		}
 
+		workflows.forEach((workflow) => {
+			if (tenantWorkflow.includes(workflow.id) && (workflow as any).scopes.length === 0) {
+				(workflow as any).scopes.push(
+					...[
+						'workflow:execute',
+						'workflow:read',
+						'workflow:share',
+						'workflow:update',
+						'workflow:delete',
+						'workflow:move',
+					],
+				);
+			}
+		});
 		return {
 			workflows,
 			count,
