@@ -1,3 +1,5 @@
+Đây là phiên bản demo được đơn giản hóa nhằm phục vụ mục đích giới thiệu. Do dự án gốc chứa các thành phần thuộc phạm vi bảo mật, một số mã nguồn và logic nghiệp vụ quan trọng không được công khai.
+
 ![Banner image](https://user-images.githubusercontent.com/10284570/173569848-c624317f-42b1-45a6-ab09-f0ea3c247648.png)
 
 # n8n - Secure Workflow Automation for Technical Teams
